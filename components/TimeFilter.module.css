@@ -1,0 +1,15 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.buttons {
+  padding: 8px;
+  border-top: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+}
+
+.picker {
+  margin: 8px;
+}

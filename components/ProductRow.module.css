@@ -1,0 +1,32 @@
+.root {
+  border-top: 1px solid #f5f5f5;
+  padding: 6px 12px;
+  margin-left: -12px;
+  margin-right: -12px;
+  display: flex;
+  align-items: center;
+}
+
+.root :global(.ant-input):not(:hover),
+.root :global(.ant-input-affix-wrapper):not(:hover) {
+  border-color: transparent;
+}
+
+.root :global(.ant-input:focus),
+.root :global(.ant-input-affix-wrapper-focused) {
+  border-color: #40a9ff;
+}
+
+.root :global(.ant-input-affix-wrapper) input {
+  text-align: right;
+}
+
+.index {
+  font-weight: 500;
+  background: #eee;
+  border-radius: 5px;
+  min-width: 26px;
+  padding: 2px 0;
+  text-align: center;
+  margin-right: 8px;
+}
