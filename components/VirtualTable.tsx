@@ -50,11 +50,13 @@ export default function VirtualTable<RecordType extends object>(
   const gridRef = useRef<VariableSizeGrid>();
   const mergedColumns = getMergedColumns(columns, size.width);
   useEffect(() => {
-    gridRef.current.resetAfterIndices({
-      columnIndex: 0,
-      rowIndex: 0,
-      shouldForceUpdate: false,
-    });
+    if (gridRef.current) {
+      gridRef.current.resetAfterIndices({
+        columnIndex: 0,
+        rowIndex: 0,
+        shouldForceUpdate: false,
+      });
+    }
   }, [size]);
 
   let columnCount = mergedColumns.length;
