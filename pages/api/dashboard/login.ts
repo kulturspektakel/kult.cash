@@ -26,7 +26,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       `https://slack.com/api/oauth.access?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=${redirectUri}`,
     );
     const result: OAuthSuccess | {ok: false} = await data.json();
-    console.log(result);
     if (result && result.ok) {
       const expires = new Date(Date.now() + MAX_AGE * 1000);
       const token = uuidv4();

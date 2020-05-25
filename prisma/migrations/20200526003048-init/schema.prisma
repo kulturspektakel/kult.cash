@@ -68,6 +68,6 @@ model CartItem {
 
 model Session {
   token   String   @id
-  name    String
+  userId  String
   expires DateTime
 }

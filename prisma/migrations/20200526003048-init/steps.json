@@ -577,7 +577,7 @@
     {
       "tag": "CreateField",
       "model": "Session",
-      "field": "name",
+      "field": "userId",
       "type": "String",
       "arity": "Required"
     },

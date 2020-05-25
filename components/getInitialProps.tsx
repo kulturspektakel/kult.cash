@@ -14,7 +14,6 @@ const generateGetInitialData = <T,>(api: Type) => async (
     try {
       const {protocol, host} = absoluteUrl(req);
       const requestUrl = `${protocol}//${host}`;
-      console.log(requestUrl);
       const res = await fetch(requestUrl + getAPIUrl(api), {
         headers: {
           cookie: req.headers.cookie,
