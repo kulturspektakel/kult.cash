@@ -34,3 +34,6 @@ yarn-error.log*
 !/firmware/.gitkeep
 /prisma/contactless.db
 /server.cert
+
+/proto/*
+!/proto/*.proto

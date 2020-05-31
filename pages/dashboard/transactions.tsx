@@ -1,5 +1,10 @@
 import App from '../../components/App';
-import {useTransactions, useDevices, useLists} from '../../components/useData';
+import {
+  useTransactions,
+  useDevices,
+  useLists,
+  TransactionData,
+} from '../../components/useData';
 import {Transaction, Device, List} from '@prisma/client';
 import React, {useState, useEffect} from 'react';
 import TransactionBar from '../../components/TransactionBar';
@@ -7,7 +12,7 @@ import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
 import TimeFilter from '../../components/TimeFilter';
 import VirtualTable from '../../components/VirtualTable';
-import {Spin} from 'antd';
+import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
 import {atom, useRecoilState} from 'recoil';
 import {NextPageContext} from 'next';
@@ -16,6 +21,7 @@ import {
   getInitialDevices,
   getInitialTransactions,
 } from '../../components/getInitialProps';
+import {Emoji} from 'emoji-mart';
 
 export const dateRangeFilterAtom = atom({
   key: 'dateRangeFilter',
@@ -24,18 +30,17 @@ export const dateRangeFilterAtom = atom({
 
 const getColums = (
   devices: Device[],
-  lists: List[],
+  listMap: Map<string, List>,
   timeFrom: number | null,
   timeUntil: number | null,
-): ColumnsType<Transaction> => [
+): ColumnsType<TransactionData> => [
   {
     title: 'Zeit',
     dataIndex: 'deviceTime',
     key: 'deviceTime',
     width: '15%',
     render: RelativeDate,
-    sorter: (a: Transaction, b: Transaction) =>
-      b.deviceTime > a.deviceTime ? 1 : -1,
+    sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
     filterDropdown: TimeFilter,
     onFilter: (value) => {
       // console.log(value, timeFrom, timeUntil);
@@ -57,27 +62,64 @@ const getColums = (
       text: d.id,
       value: d.id,
     })),
-    onFilter: (value, t: Transaction) => t.deviceId === value,
+    onFilter: (value, t) => t.deviceId === value,
   },
   {
     title: 'Liste',
     key: 'listName',
     dataIndex: 'listName',
     width: '25%',
-    filters: (lists || []).map(({name}) => ({
+    filters: Array.from(listMap.values()).map(({name}) => ({
       text: name,
       value: name,
     })),
-    onFilter: (value, t: Transaction) => t.listName === value,
+    onFilter: (value, t) => t.listName === value,
+    render: (listName: string, t) => {
+      const emoji = listMap.get(listName)?.emoji;
+      return (
+        <>
+          {emoji && (
+            <>
+              <span style={{position: 'relative', top: 2}}>
+                <Emoji size={16} emoji={emoji} />
+              </span>
+              &nbsp;
+            </>
+          )}
+          {listName}
+        </>
+      );
+    },
   },
   {
     title: 'Betrag',
     key: 'total',
     width: '15%',
-    render: (_, transaction: Transaction) =>
-      currencyFormatter.format(
-        (transaction.balanceBefore - transaction.balanceAfter) / 100,
-      ),
+    render: (_, transaction) => {
+      const name = (
+        <span>
+          {currencyFormatter.format(
+            (transaction.balanceBefore - transaction.balanceAfter) / 100,
+          )}
+        </span>
+      );
+
+      if (transaction.cartItems.length === 0) {
+        return name;
+      }
+
+      return (
+        <Tooltip
+          title={transaction.cartItems.map((item) => (
+            <div key={item.product}>
+              {item.amount}&times;&nbsp;{item.product}
+            </div>
+          ))}
+        >
+          {name}
+        </Tooltip>
+      );
+    },
     sorter: (a: Transaction, b: Transaction) =>
       a.balanceBefore - a.balanceAfter - (b.balanceBefore - b.balanceAfter),
   },
@@ -99,7 +141,7 @@ export default function Transactions({
 }: {
   initialLists?: List[];
   initialDevices?: Device[];
-  initialTransactions?: Transaction[];
+  initialTransactions?: TransactionData[];
 }) {
   const {items: transactions} = useTransactions(initialTransactions);
   const {items: devices} = useDevices(initialDevices);
@@ -114,7 +156,10 @@ export default function Transactions({
     setData(currentDataSource || transactions || []);
   }, [transactions, currentDataSource]);
 
-  console.log('render', timeFrom, timeUntil);
+  const listMap = lists.reduce<Map<string, List>>(
+    (acc, cv) => acc.set(cv.name, cv),
+    new Map(),
+  );
 
   return (
     <App>
@@ -124,7 +169,7 @@ export default function Transactions({
         <VirtualTable<Transaction>
           bordered
           size="small"
-          columns={getColums(devices, lists, timeFrom, timeUntil)}
+          columns={getColums(devices, listMap, timeFrom, timeUntil)}
           dataSource={transactions}
           pagination={false}
           showSorterTooltip={false}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+message TransactionMessage {
+  string id = 1;
+  string device_id = 2;
+  enum Mode {
+    UNIVERSAL = 0;
+  }
+  Mode mode = 3;
+  int32 device_time = 4;
+  string card = 5;
+  int32 balanceBefore = 6;
+  int32 tokensBefore  = 7;
+  int32 balanceAfter  = 8;
+  int32 tokensAfter   = 9;
+  string list_name = 10;
+
+  message CartItemMessage {
+    int32 price = 1;
+    string product = 2;
+  }
+  repeated CartItemMessage cart_items = 11;
+}

@@ -1,11 +1,14 @@
-import {List} from '@prisma/client';
 import {crc32} from 'crc';
 import {NextApiRequest, NextApiResponse} from 'next';
 import deviceAuthentication from '../../utils/deviceAuthentication';
 import prismaClient from '../../utils/prismaClient';
 import updateLastSeen, {parseUserAgent} from '../../utils/updateLastSeen';
+import {ConfigMessage} from '../../proto/index';
 
-function asciinize(s: string): string {
+function asciinize(s: string | null): string {
+  if (!s) {
+    return;
+  }
   const replacements = {
     ae: /ä/g,
     oe: /ö/g,
@@ -22,34 +25,8 @@ function asciinize(s: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-export function getConfig(list: List) {
-  const name = list.name;
-  const products: [number | null, string | null][] = [
-    [list.price1, list.product1],
-    [list.price2, list.product2],
-    [list.price3, list.product3],
-    [list.price4, list.product4],
-    [list.price5, list.product5],
-    [list.price6, list.product6],
-    [list.price7, list.product7],
-    [list.price8, list.product8],
-    [list.price9, list.product9],
-  ];
-
-  const productList: string[] = [];
-  for (let [price, product] of products) {
-    if (!price) {
-      break;
-    }
-    productList.push(`${price},${asciinize(product)}`);
-  }
-  const p = productList.join('\n');
-
-  return [crc32(p), name, p].join('\n');
-}
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  await deviceAuthentication(req, res);
+  // await deviceAuthentication(req, res);
   await updateLastSeen(req);
 
   const {id} = parseUserAgent(req);
@@ -65,5 +42,20 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(404).send('Not Found');
   }
 
-  res.send(getConfig(list));
+  const message = ConfigMessage.encode({
+    ...list,
+    product1: asciinize(list.product1),
+    product2: asciinize(list.product2),
+    product3: asciinize(list.product3),
+    product4: asciinize(list.product4),
+    product5: asciinize(list.product5),
+    product6: asciinize(list.product6),
+    product7: asciinize(list.product7),
+    product8: asciinize(list.product8),
+    product9: asciinize(list.product9),
+    checksum: crc32(JSON.stringify(list)),
+  }).finish();
+
+  res.setHeader('Content-Type', 'application/x-protobuf');
+  res.send(message);
 };

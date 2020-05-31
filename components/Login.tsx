@@ -3,7 +3,7 @@ import styles from './Login.module.css';
 import {atom, useRecoilState} from 'recoil';
 import Spin from 'antd/lib/spin';
 
-export const requiresLoginAtom = atom({
+export const requiresLoginAtom = atom<boolean>({
   key: 'loginState',
   default: false,
 });

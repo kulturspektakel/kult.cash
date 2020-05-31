@@ -7,18 +7,21 @@ import {
   ListUpdateInput,
   ListCreateInput,
   Transaction,
+  CartItem,
 } from '@prisma/client';
 import {message} from 'antd';
-import {atom, useRecoilState} from 'recoil';
+import {atom, useRecoilState, RecoilState} from 'recoil';
 import {requiresLoginAtom} from './Login';
 
 export type Type = 'devices' | 'transactions' | 'lists';
 
 export const getAPIUrl = (type: Type) => `/api/dashboard/${type}`;
 
-const generateHook = <T, U, C>(type: Type, primaryKey: string, atom) => (
-  initialData?: T[],
-) => {
+const generateHook = <T, U, C>(
+  type: Type,
+  primaryKey: string,
+  atom: RecoilState<T[]>,
+) => (initialData?: T[]) => {
   const url = getAPIUrl(type);
   const [, setRequiresLogin] = useRecoilState(requiresLoginAtom);
 
@@ -87,17 +90,17 @@ const generateHook = <T, U, C>(type: Type, primaryKey: string, atom) => (
   return {items, deleteItem, updateItem, createItem};
 };
 
-const listsAtom = atom({
+const listsAtom = atom<List[]>({
   key: 'listsCache',
   default: null,
 });
 
-const devicesAtom = atom({
+const devicesAtom = atom<Device[]>({
   key: 'devicesCache',
   default: null,
 });
 
-const transactionsAtom = atom({
+const transactionsAtom = atom<TransactionData[]>({
   key: 'transactionsCache',
   default: null,
 });
@@ -106,16 +109,18 @@ export const useDevices = generateHook<
   Device,
   DeviceUpdateInput,
   DeviceCreateInput
->('devices', 'id', listsAtom);
+>('devices', 'id', devicesAtom);
 
 export const useLists = generateHook<List, ListUpdateInput, ListCreateInput>(
   'lists',
   'name',
-  devicesAtom,
+  listsAtom,
 );
 
+export type TransactionData = Transaction & {cartItems: CartItem[]};
+
 export const useTransactions = generateHook<
-  Transaction,
+  TransactionData,
   ListUpdateInput,
   ListCreateInput
 >('transactions', 'id', transactionsAtom);

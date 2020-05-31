@@ -1,0 +1,23 @@
+syntax = "proto3";
+message ConfigMessage {
+  string name = 1;
+  string product1 = 2;
+  int32 price1 = 3;
+  string product2 = 4;
+  int32 price2 = 5;
+  string product3 = 6;
+  int32 price3 = 7;
+  string product4 = 8;
+  int32 price4 = 9;
+  string product5 = 10;
+  int32 price5 = 11;
+  string product6 = 12;
+  int32 price6 = 13;
+  string product7 = 14;
+  int32 price7 = 15;
+  string product8 = 16;
+  int32 price8 = 17;
+  string product9 = 18;
+  int32 price9 = 19;
+  int32 checksum = 20;
+}
