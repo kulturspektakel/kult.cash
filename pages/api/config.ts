@@ -39,7 +39,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     .list();
 
   if (!list) {
-    return res.status(404).send('Not Found');
+    return res.status(204).send('No Content');
   }
 
   const message = ConfigMessage.encode({
