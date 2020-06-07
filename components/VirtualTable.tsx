@@ -103,14 +103,13 @@ export default function VirtualTable<RecordType extends object>(
 const Cell = <RecordType extends object>(
   mergedColumns: Array<ColumnType<RecordType>>,
   rawData: RecordType[],
-) => ({columnIndex, rowIndex, style}: GridChildComponentProps) => (
-  <div className={styles.cell} style={style}>
-    {mergedColumns[columnIndex].render
-      ? mergedColumns[columnIndex].render!(
-          rawData[rowIndex][mergedColumns[columnIndex].dataIndex],
-          rawData[rowIndex],
-          rowIndex,
-        )
-      : rawData[rowIndex][mergedColumns[columnIndex].dataIndex]}
-  </div>
-);
+) => ({columnIndex, rowIndex, style}: GridChildComponentProps) => {
+  const col = mergedColumns[columnIndex];
+  // @ts-ignore
+  const value = rawData[rowIndex][col.dataIndex];
+  return (
+    <div className={styles.cell} style={style}>
+      {col.render ? col.render!(value, rawData[rowIndex], rowIndex) : value}
+    </div>
+  );
+};

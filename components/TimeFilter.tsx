@@ -31,7 +31,7 @@ export default function TimeFilter({
     ([a, b]: DateRange) => {
       const from = a ? a.unix() * 1000 : null;
       const to = b ? b.unix() * 1000 : null;
-      setSelectedKeys([from, to]);
+      // setSelectedKeys([from, to]);
     },
     [setSelectedKeys],
   );
@@ -43,12 +43,12 @@ export default function TimeFilter({
         showTime={{format: 'HH:mm'}}
         format="DD.MM.YYYY HH:mm"
         placeholder={['von', 'bis']}
-        onChange={onChange}
-        value={
-          timeFrom
-            ? ([moment(timeFrom), moment(timeUntil)] as const)
-            : undefined
-        }
+        // onChange={onChange}
+        // value={
+        //   timeFrom
+        //     ? ([moment(timeFrom), moment(timeUntil)] as const)
+        //     : undefined
+        // }
       />
       <Space className={styles.buttons}>
         <Button size="small" type="ghost" onClick={clearFilters}>
