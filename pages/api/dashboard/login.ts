@@ -21,7 +21,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const {code} = req.query;
   if (code) {
     const {protocol, host} = absoluteUrl(req);
-    const redirectUri = `${protocol}//${host}${req.url.split('?')[0]}`;
+    const redirectUri = `${protocol}//${host}${req.url!.split('?')[0]}`;
     const data = await fetch(
       `https://slack.com/api/oauth.access?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=${redirectUri}`,
     );

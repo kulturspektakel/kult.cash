@@ -29,7 +29,7 @@ type Props = {
 
 export default function ({list, onDelete, onSave, devices}: Props) {
   const [dirty, setDirty] = useState(false);
-  const [emoji, setEmoji] = useState<string>(null);
+  const [emoji, setEmoji] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductT[]>([]);
   useEffect(() => {
     setProducts([
@@ -73,7 +73,7 @@ export default function ({list, onDelete, onSave, devices}: Props) {
     [setProducts, setDirty, products],
   );
 
-  const onEmojiChange = useCallback((emoji: string) => {
+  const onEmojiChange = useCallback((emoji: string | null) => {
     setEmoji(emoji);
     setDirty(true);
   }, []);

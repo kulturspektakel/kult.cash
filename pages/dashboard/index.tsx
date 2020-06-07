@@ -12,7 +12,7 @@ import {
 import {NextPageContext} from 'next';
 const {Option} = Select;
 
-const getColumns = memoize((lists: List[], updateDevice) => [
+const getColumns = memoize((lists: List[] | null, updateDevice) => [
   {
     title: 'ID',
     dataIndex: 'id',
@@ -29,7 +29,7 @@ const getColumns = memoize((lists: List[], updateDevice) => [
       <Select
         style={{display: 'block'}}
         dropdownMatchSelectWidth={false}
-        defaultValue={listName}
+        defaultValue={listName ?? ''}
         onChange={(name: string | null) =>
           updateDevice({
             id: device.id,
@@ -41,7 +41,7 @@ const getColumns = memoize((lists: List[], updateDevice) => [
           })
         }
       >
-        <Option value={null}>keine Preisliste</Option>
+        <Option value={''}>keine Preisliste</Option>
         {(lists || []).map((list) => (
           <Option key={list.name} value={list.name}>
             {list.name}
@@ -80,7 +80,7 @@ export default function Devices({
       <Table
         loading={!devices}
         columns={getColumns(lists, updateDevice)}
-        dataSource={devices}
+        dataSource={devices ?? undefined}
         pagination={false}
         rowKey="id"
       />

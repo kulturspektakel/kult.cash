@@ -51,7 +51,7 @@ model Transaction {
   tokensBefore  Int
   balanceAfter  Int
   tokensAfter   Int
-  listName      String
+  listName      String?
   cartItems     CartItem[]
   createdAt     DateTime   @default(now())
 }

@@ -3,9 +3,14 @@ import {Button, DatePicker, Space} from 'antd';
 import {useCallback} from 'react';
 import styles from './TimeFilter.module.css';
 import moment, {Moment} from 'moment';
-import {useRecoilState} from 'recoil';
-import {dateRangeFilterAtom} from '../pages/dashboard/transactions';
+import {useRecoilState, atom} from 'recoil';
 const {RangePicker} = DatePicker;
+export type DateRange = [Moment | null, Moment | null];
+
+export const dateRangeFilterAtom = atom<DateRange>({
+  key: 'dateRangeFilter',
+  default: [null, null],
+});
 
 export default function TimeFilter({
   clearFilters,
@@ -18,13 +23,15 @@ export default function TimeFilter({
   );
 
   const onDone = useCallback(() => {
-    setDateRangeFilter([timeFrom, timeUntil]);
+    setDateRangeFilter([moment(timeFrom), moment(timeUntil)]);
     confirm();
   }, [setDateRangeFilter, confirm, timeFrom, timeUntil]);
 
   const onChange = useCallback(
-    ([from, to]: [Moment, Moment]) => {
-      setSelectedKeys([from.unix() * 1000, to.unix() * 1000]);
+    ([a, b]: DateRange) => {
+      const from = a ? a.unix() * 1000 : null;
+      const to = b ? b.unix() * 1000 : null;
+      setSelectedKeys([from, to]);
     },
     [setSelectedKeys],
   );
@@ -37,8 +44,11 @@ export default function TimeFilter({
         format="DD.MM.YYYY HH:mm"
         placeholder={['von', 'bis']}
         onChange={onChange}
-        // @ts-ignore
-        value={timeFrom ? [moment(timeFrom), moment(timeUntil)] : undefined}
+        value={
+          timeFrom
+            ? ([moment(timeFrom), moment(timeUntil)] as const)
+            : undefined
+        }
       />
       <Space className={styles.buttons}>
         <Button size="small" type="ghost" onClick={clearFilters}>

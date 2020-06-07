@@ -20,7 +20,7 @@ export const getAPIUrl = (type: Type) => `/api/dashboard/${type}`;
 const generateHook = <T, U, C>(
   type: Type,
   primaryKey: string,
-  atom: RecoilState<T[]>,
+  atom: RecoilState<T[] | null>,
 ) => (initialData?: T[]) => {
   const url = getAPIUrl(type);
   const [, setRequiresLogin] = useRecoilState(requiresLoginAtom);
@@ -30,7 +30,7 @@ const generateHook = <T, U, C>(
     (items: T[]) => void,
   ] = useRecoilState(atom);
 
-  const [items, setItems] = useState(cachedItems ?? initialData);
+  const [items, setItems] = useState(cachedItems ?? initialData ?? null);
 
   const update = async (res: Response) => {
     const data = await res.json();
@@ -90,17 +90,17 @@ const generateHook = <T, U, C>(
   return {items, deleteItem, updateItem, createItem};
 };
 
-const listsAtom = atom<List[]>({
+const listsAtom = atom<null | List[]>({
   key: 'listsCache',
   default: null,
 });
 
-const devicesAtom = atom<Device[]>({
+const devicesAtom = atom<null | Device[]>({
   key: 'devicesCache',
   default: null,
 });
 
-const transactionsAtom = atom<TransactionData[]>({
+const transactionsAtom = atom<null | TransactionData[]>({
   key: 'transactionsCache',
   default: null,
 });

@@ -23,9 +23,12 @@ export default function Lists({
   const {items: devices} = useDevices(initialDevices);
   const [modal, contextHolder] = Modal.useModal();
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [newListName, setNewListName] = useState<string>(null);
+  const [newListName, setNewListName] = useState<string | null>(null);
 
   const onCreateList = useCallback(async () => {
+    if (!newListName) {
+      return;
+    }
     await createItem({
       name: newListName,
     });
@@ -48,7 +51,7 @@ export default function Lists({
         <Input
           placeholder="Name"
           autoFocus
-          value={newListName}
+          value={newListName ?? ''}
           onChange={(e) => setNewListName(e.target.value)}
         />
       </Modal>
@@ -71,7 +74,7 @@ export default function Lists({
               <Col sm={24} md={12} lg={8} xxl={6} key={list.name}>
                 <ProductList
                   list={list}
-                  devices={devices}
+                  devices={devices ?? []}
                   onSave={(list: ListUpdateInput) => updateItem(list)}
                   onDelete={() =>
                     modal.confirm({

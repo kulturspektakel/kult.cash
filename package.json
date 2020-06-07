@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "setup": "prisma migrate up --experimental -c",
-    "proto": "rm proto/index.js proto/index.d.ts && yarn pbjs -t static-module -w commonjs -o proto/index.js proto/* --es6 && yarn pbts -o proto/index.d.ts proto/index.js",
+    "proto": "rm -f proto/index.js proto/index.d.ts && yarn pbjs -t static-module -w commonjs -o proto/index.js proto/* --es6 && yarn pbts -o proto/index.d.ts proto/index.js",
     "postinstall": "prisma generate && yarn proto"
   },
   "dependencies": {

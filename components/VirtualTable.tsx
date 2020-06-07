@@ -1,9 +1,9 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {VariableSizeGrid} from 'react-window';
+import {VariableSizeGrid, GridChildComponentProps} from 'react-window';
 import {Table} from 'antd';
 import styles from './VirtualTable.module.css';
 import ReactResizeDetector from 'react-resize-detector';
-import {TableProps, ColumnType} from 'antd/lib/table';
+import {TableProps, ColumnType, ColumnsType} from 'antd/lib/table';
 import memoize from 'lodash.memoize';
 
 type ColumnsTypeWithWidth<RecordType> = Array<
@@ -40,14 +40,16 @@ const getMergedColumns = memoize(
 const ROW_HEIGHT = 40;
 
 export default function VirtualTable<RecordType extends object>(
-  props: TableProps<RecordType>,
+  props: TableProps<RecordType> & {
+    columns: ColumnsType<RecordType>;
+  },
 ) {
   const {columns} = props;
   const [size, setSize] = useState<{width: number; height: number}>({
     width: 0,
     height: 0,
   });
-  const gridRef = useRef<VariableSizeGrid>();
+  const gridRef = useRef<VariableSizeGrid>(null);
   const mergedColumns = getMergedColumns(columns, size.width);
   useEffect(() => {
     if (gridRef.current) {
@@ -78,7 +80,7 @@ export default function VirtualTable<RecordType extends object>(
         columns={mergedColumns}
         pagination={false}
         components={{
-          body: (rawData: object[]) => (
+          body: (rawData) => (
             <VariableSizeGrid
               ref={gridRef}
               className="virtual-grid"
@@ -101,14 +103,14 @@ export default function VirtualTable<RecordType extends object>(
 const Cell = <RecordType extends object>(
   mergedColumns: Array<ColumnType<RecordType>>,
   rawData: RecordType[],
-) => ({columnIndex, rowIndex, style}) => (
+) => ({columnIndex, rowIndex, style}: GridChildComponentProps) => (
   <div className={styles.cell} style={style}>
     {mergedColumns[columnIndex].render
-      ? mergedColumns[columnIndex].render(
-          rawData[rowIndex][mergedColumns[columnIndex].dataIndex as number],
+      ? mergedColumns[columnIndex].render!(
+          rawData[rowIndex][mergedColumns[columnIndex].dataIndex],
           rawData[rowIndex],
           rowIndex,
         )
-      : rawData[rowIndex][mergedColumns[columnIndex].dataIndex as number]}
+      : rawData[rowIndex][mergedColumns[columnIndex].dataIndex]}
   </div>
 );

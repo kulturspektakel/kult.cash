@@ -18,12 +18,12 @@ const formatter = new Intl.NumberFormat('de-DE', {
 
 export default React.forwardRef<Ref, Props>(
   ({product, price, index, onChange, ...props}: Props, ref) => {
-    const inputRef = useRef<Input>();
+    const inputRef = useRef<Input>(null);
     return (
       <li className={styles.root} ref={ref} {...props}>
         <span className={styles.index}>{index}</span>
         <Input
-          value={product}
+          value={product ?? ''}
           maxLength={16}
           onChange={(e) => {
             onChange(index - 1, {name: e.target.value});
@@ -33,7 +33,7 @@ export default React.forwardRef<Ref, Props>(
         <Input
           ref={inputRef}
           inputMode="decimal"
-          defaultValue={formatter.format(price / 100)}
+          defaultValue={price ? formatter.format(price / 100) : undefined}
           onBlur={(e) => {
             let newPrice = Math.floor(
               parseFloat((e.target.value || '0').replace(/,/g, '.')) * 100,

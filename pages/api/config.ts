@@ -5,9 +5,9 @@ import prismaClient from '../../utils/prismaClient';
 import updateLastSeen, {parseUserAgent} from '../../utils/updateLastSeen';
 import {ConfigMessage} from '../../proto/index';
 
-function asciinize(s: string | null): string {
+function asciinize(s: string | null): string | null {
   if (!s) {
-    return;
+    return null;
   }
   const replacements = {
     ae: /ä/g,
@@ -26,7 +26,7 @@ function asciinize(s: string | null): string {
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  // await deviceAuthentication(req, res);
+  await deviceAuthentication(req, res);
   await updateLastSeen(req);
 
   const {id} = parseUserAgent(req);

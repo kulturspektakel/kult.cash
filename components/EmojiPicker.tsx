@@ -8,7 +8,7 @@ export default function EmojiPicker({
   onChange,
 }: {
   value: string | null;
-  onChange: (emoji: string) => void;
+  onChange: (emoji: string | null) => void;
 }) {
   const [pickerVisible, setPickerVisible] = useState(false);
   return (
@@ -28,7 +28,7 @@ export default function EmojiPicker({
           emoji={value ?? ''}
           onSelect={({colons}) => {
             setPickerVisible(false);
-            onChange(colons);
+            onChange(colons ?? null);
           }}
         />
       }

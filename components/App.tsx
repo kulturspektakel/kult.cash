@@ -11,7 +11,7 @@ const ROUTES = {
   '/dashboard/transactions': 'Auswertung',
 };
 
-export default function ({children}) {
+export default function ({children}: {children: React.ReactNode}) {
   const router = useRouter();
 
   return (

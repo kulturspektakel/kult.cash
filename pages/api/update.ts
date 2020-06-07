@@ -9,7 +9,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await deviceAuthentication(req, res);
   await updateLastSeen(req);
   const {id, version} = parseUserAgent(req);
-  const updateDir = path.join(process.env.PROJECT_DIRNAME, 'firmware');
+  if (!id || !version) {
+    return res.status(400).send('Bad Request');
+  }
+  const updateDir = path.join(process.env.PROJECT_DIRNAME!, 'firmware');
   const updates = await fs.readdir(updateDir);
   const newerVersion = updates
     .filter((s) => /\d+\.bin/.test(s))

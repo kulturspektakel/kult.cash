@@ -10,7 +10,7 @@ import React, {useState, useEffect} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
-import TimeFilter from '../../components/TimeFilter';
+import TimeFilter, {dateRangeFilterAtom} from '../../components/TimeFilter';
 import VirtualTable from '../../components/VirtualTable';
 import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
@@ -23,16 +23,11 @@ import {
 } from '../../components/getInitialProps';
 import {Emoji} from 'emoji-mart';
 
-export const dateRangeFilterAtom = atom({
-  key: 'dateRangeFilter',
-  default: [],
-});
-
 const getColums = (
-  devices: Device[],
-  listMap: Map<string, List>,
-  timeFrom: number | null,
-  timeUntil: number | null,
+  devices: Device[] | null,
+  listMap: Map<string, List> | undefined,
+  timeFrom: moment.Moment | null,
+  timeUntil: moment.Moment | null,
 ): ColumnsType<TransactionData> => [
   {
     title: 'Zeit',
@@ -44,7 +39,8 @@ const getColums = (
     filterDropdown: TimeFilter,
     onFilter: (value) => {
       // console.log(value, timeFrom, timeUntil);
-      return timeFrom >= value && value <= timeUntil;
+      // return timeFrom >= value && value <= timeUntil;
+      return true;
     },
   },
   {
@@ -69,13 +65,15 @@ const getColums = (
     key: 'listName',
     dataIndex: 'listName',
     width: '25%',
-    filters: Array.from(listMap.values()).map(({name}) => ({
-      text: name,
-      value: name,
-    })),
+    filters: listMap
+      ? Array.from(listMap.values()).map(({name}) => ({
+          text: name,
+          value: name,
+        }))
+      : undefined,
     onFilter: (value, t) => t.listName === value,
     render: (listName: string, t) => {
-      const emoji = listMap.get(listName)?.emoji;
+      const emoji = listMap?.get(listName)?.emoji;
       return (
         <>
           {emoji && (
@@ -147,16 +145,16 @@ export default function Transactions({
   const {items: devices} = useDevices(initialDevices);
   const {items: lists} = useLists(initialLists);
   const [[timeFrom, timeUntil]] = useRecoilState(dateRangeFilterAtom);
-  const [data, setData] = useState<Transaction[]>(null);
-  const [currentDataSource, setCurrentDataSource] = useState<Transaction[]>(
-    null,
-  );
+  const [data, setData] = useState<Transaction[] | null>(null);
+  const [currentDataSource, setCurrentDataSource] = useState<
+    Transaction[] | null
+  >(null);
 
   useEffect(() => {
     setData(currentDataSource || transactions || []);
   }, [transactions, currentDataSource]);
 
-  const listMap = lists.reduce<Map<string, List>>(
+  const listMap = lists?.reduce<Map<string, List>>(
     (acc, cv) => acc.set(cv.name, cv),
     new Map(),
   );
@@ -166,7 +164,7 @@ export default function Transactions({
       {!transactions ? (
         <Spin size="large" style={{marginTop: 100}} />
       ) : (
-        <VirtualTable<Transaction>
+        <VirtualTable<TransactionData>
           bordered
           size="small"
           columns={getColums(devices, listMap, timeFrom, timeUntil)}
