@@ -10,7 +10,10 @@ import React, {useState, useEffect} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
-import TimeFilter, {dateRangeFilterAtom} from '../../components/TimeFilter';
+import TimeFilter, {
+  dateRangeFilterAtom,
+  DateRange,
+} from '../../components/TimeFilter';
 import VirtualTable from '../../components/VirtualTable';
 import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
@@ -26,8 +29,7 @@ import {Emoji} from 'emoji-mart';
 const getColums = (
   devices: Device[] | null,
   listMap: Map<string, List> | undefined,
-  timeFrom: moment.Moment | null,
-  timeUntil: moment.Moment | null,
+  dateRange: DateRange,
 ): ColumnsType<TransactionData> => [
   {
     title: 'Zeit',
@@ -144,7 +146,7 @@ export default function Transactions({
   const {items: transactions} = useTransactions(initialTransactions);
   const {items: devices} = useDevices(initialDevices);
   const {items: lists} = useLists(initialLists);
-  const [[timeFrom, timeUntil]] = useRecoilState(dateRangeFilterAtom);
+  const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<Transaction[] | null>(null);
   const [currentDataSource, setCurrentDataSource] = useState<
     Transaction[] | null
@@ -167,7 +169,7 @@ export default function Transactions({
         <VirtualTable<TransactionData>
           bordered
           size="small"
-          columns={getColums(devices, listMap, timeFrom, timeUntil)}
+          columns={getColums(devices, listMap, timeRange)}
           dataSource={transactions}
           pagination={false}
           showSorterTooltip={false}
