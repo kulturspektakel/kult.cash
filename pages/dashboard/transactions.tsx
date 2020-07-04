@@ -6,7 +6,7 @@ import {
   TransactionData,
 } from '../../components/useData';
 import {Transaction, Device, List} from '@prisma/client';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
@@ -17,7 +17,7 @@ import TimeFilter, {
 import VirtualTable from '../../components/VirtualTable';
 import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
-import {atom, useRecoilState} from 'recoil';
+import {useRecoilState} from 'recoil';
 import {NextPageContext} from 'next';
 import {
   getInitialLists,
@@ -25,6 +25,9 @@ import {
   getInitialTransactions,
 } from '../../components/getInitialProps';
 import {Emoji} from 'emoji-mart';
+import {revenueFromTransaction, filterBonbude} from '../../utils/transaction';
+import {ShoppingCartOutlined} from '@ant-design/icons';
+import {useRouter} from 'next/router';
 
 const getColums = (
   devices: Device[] | null,
@@ -92,32 +95,32 @@ const getColums = (
     },
   },
   {
-    title: 'Betrag',
+    title: 'Umsatz',
     key: 'total',
     width: '15%',
     render: (_, transaction) => {
-      const name = (
-        <span>
-          {currencyFormatter.format(
-            (transaction.balanceBefore - transaction.balanceAfter) / 100,
-          )}
-        </span>
-      );
-
-      if (transaction.cartItems.length === 0) {
-        return name;
-      }
-
       return (
-        <Tooltip
-          title={transaction.cartItems.map((item) => (
-            <div key={item.product}>
-              {item.amount}&times;&nbsp;{item.product}
-            </div>
-          ))}
-        >
-          {name}
-        </Tooltip>
+        <>
+          <span>
+            {currencyFormatter.format(
+              revenueFromTransaction(transaction) / 100,
+            )}
+          </span>
+          {transaction.cartItems.length > 0 && (
+            <>
+              &nbsp;
+              <Tooltip
+                title={transaction.cartItems.map((item) => (
+                  <div key={item.product}>
+                    {item.amount}&times;&nbsp;{item.product}
+                  </div>
+                ))}
+              >
+                <ShoppingCartOutlined />
+              </Tooltip>
+            </>
+          )}
+        </>
       );
     },
     sorter: (a: Transaction, b: Transaction) =>
@@ -128,11 +131,23 @@ const getColums = (
     key: 'token',
     width: '15%',
     render: (_, transaction: Transaction) =>
-      transaction.tokensBefore - transaction.tokensAfter,
+      transaction.tokensAfter - transaction.tokensBefore,
     sorter: (a: Transaction, b: Transaction) =>
       a.tokensBefore - a.tokensAfter - (b.tokensBefore - b.tokensAfter),
   },
 ];
+
+function useFilteredTransactions(initialTransactions?: TransactionData[]) {
+  const router = useRouter();
+  const isBonbude = Boolean(router.query.bonbude);
+  useEffect(() => {}, []);
+  const {items} = useTransactions(initialTransactions);
+  const filteredTransactions = useMemo(
+    () => items?.filter((t) => filterBonbude(t) === isBonbude),
+    [items, isBonbude],
+  );
+  return filteredTransactions;
+}
 
 export default function Transactions({
   initialLists,
@@ -143,23 +158,26 @@ export default function Transactions({
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
 }) {
-  const {items: transactions} = useTransactions(initialTransactions);
+  const transactions = useFilteredTransactions(initialTransactions);
   const {items: devices} = useDevices(initialDevices);
   const {items: lists} = useLists(initialLists);
   const [timeRange] = useRecoilState(dateRangeFilterAtom);
-  const [data, setData] = useState<Transaction[] | null>(null);
+  const [data, setData] = useState<TransactionData[] | null>(null);
   const [currentDataSource, setCurrentDataSource] = useState<
-    Transaction[] | null
+    TransactionData[] | null
   >(null);
 
-  useEffect(() => {
-    setData(currentDataSource || transactions || []);
-  }, [transactions, currentDataSource]);
+  useEffect(() => setData(currentDataSource || transactions || []), [
+    transactions,
+    currentDataSource,
+  ]);
 
   const listMap = lists?.reduce<Map<string, List>>(
     (acc, cv) => acc.set(cv.name, cv),
     new Map(),
   );
+
+  const columns = getColums(devices, listMap, timeRange);
 
   return (
     <App>
@@ -169,7 +187,7 @@ export default function Transactions({
         <VirtualTable<TransactionData>
           bordered
           size="small"
-          columns={getColums(devices, listMap, timeRange)}
+          columns={columns}
           dataSource={transactions}
           pagination={false}
           showSorterTooltip={false}
@@ -179,7 +197,7 @@ export default function Transactions({
           }
         />
       )}
-      {data && <TransactionBar data={data} />}
+      {data && <TransactionBar data={data} columns={columns} />}
     </App>
   );
 }

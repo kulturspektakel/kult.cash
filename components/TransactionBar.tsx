@@ -1,13 +1,19 @@
-import {Transaction} from '@prisma/client';
 import currencyFormatter from '../utils/currencyFormatter';
-import {Button, Drawer} from 'antd';
+import {Button, Drawer, Radio} from 'antd';
 import TransactionStats from './TransactionStats';
 import {useState, useCallback} from 'react';
 import {FileExcelOutlined} from '@ant-design/icons';
 import zipcelx from 'zipcelx';
+import {TransactionData} from './useData';
+import {ColumnsType} from 'antd/lib/table';
+import styles from './TransactionBar.module.css';
 
-export default function TransactionBar(props: {data: Transaction[]}) {
+export default function TransactionBar(props: {
+  data: TransactionData[];
+  columns: ColumnsType<TransactionData>;
+}) {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [groupBy, setGroupBy] = useState<'list' | 'product'>('list');
 
   const total = props.data.reduce(
     (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
@@ -26,7 +32,7 @@ export default function TransactionBar(props: {data: Transaction[]}) {
     zipcelx({
       filename: 'transactions',
       sheet: {
-        data: props.data.map((t: Transaction) =>
+        data: props.data.map((t) =>
           Object.values(t).map((value) => ({
             value: String(value),
             type: 'string',
@@ -36,6 +42,13 @@ export default function TransactionBar(props: {data: Transaction[]}) {
     });
   }, [props.data]);
 
+  const content = {
+    deviceTime: <>{props.data.length} Transaktionen</>,
+    card: <>{cards} Karten</>,
+    deviceId: <>{devices} Geräte</>,
+    total: <>{currencyFormatter.format(total / 100)}</>,
+  };
+
   return (
     <Drawer
       placement="bottom"
@@ -44,29 +57,42 @@ export default function TransactionBar(props: {data: Transaction[]}) {
       mask={false}
       height={60}
       bodyStyle={{
-        padding: 15,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        padding: 0,
       }}
     >
-      {props.data.length} Transaktionen {cards} Karten
-      <strong>{currencyFormatter.format(total / 100)}</strong> {devices} Geräte
-      <Button
+      <div className={styles.bar} onClick={() => setDrawerVisible(true)}>
+        {props.columns.map((col) => (
+          <div style={{width: col.width}}>{content[col.key]}</div>
+        ))}
+      </div>
+
+      {/* <Button
         type="primary"
         ghost
         icon={<FileExcelOutlined />}
         onClick={onDownload}
       >
         Download
-      </Button>
-      <Button type="primary" ghost onClick={() => setDrawerVisible(true)}>
-        Details
-      </Button>
+      </Button> */}
       <Drawer
         placement="bottom"
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
+        title={
+          <>
+            Statistik
+            <Radio.Group
+              options={[
+                {label: 'nach Preislisten', value: 'list'},
+                {label: 'nach Produkten', value: 'product'},
+              ]}
+              onChange={(e) => setGroupBy(e.target.value)}
+              value={groupBy}
+              optionType="button"
+            />
+          </>
+        }
+        height="70%"
       >
         <TransactionStats data={props.data} />
       </Drawer>

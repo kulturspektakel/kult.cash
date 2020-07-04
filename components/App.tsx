@@ -8,7 +8,8 @@ import Login from './Login';
 const ROUTES = {
   '/dashboard': 'Geräte',
   '/dashboard/lists': 'Preislisten',
-  '/dashboard/transactions': 'Auswertung',
+  '/dashboard/transactions': 'Buden',
+  '/dashboard/transactions?bonbude=1': 'Bonbuden',
 };
 
 export default function ({children}: {children: React.ReactNode}) {

@@ -56,13 +56,21 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           device: {
             connect: {id: deviceId},
           },
-          deviceTime: new Date(deviceTime),
+          deviceTime: new Date(deviceTime * 1000),
           cartItems: {
             create: cartItemsCreate,
           },
         },
       });
-      // postTransaction(transaction);
+      if (
+        Math.abs(
+          transaction.createdAt.getTime() - transaction.deviceTime.getTime(),
+        ) <
+        2 * 60 * 1000
+      ) {
+        // if transaction is not more than 2 minutes ago
+        postTransaction(transaction);
+      }
       return res.status(201).send('Created');
     } catch (e) {
       console.error(e);

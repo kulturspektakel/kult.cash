@@ -33,7 +33,7 @@ const generateHook = <T, U, C>(
   const [items, setItems] = useState(cachedItems ?? initialData ?? null);
 
   const update = async (res: Response) => {
-    const data = await res.json();
+    let data: T[] = await res.json();
     setItems(data);
     setCachedItems(data);
     return data;

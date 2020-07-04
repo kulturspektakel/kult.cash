@@ -1,0 +1,16 @@
+.bar {
+  display: table;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.bar:hover {
+  background: #f8f9f9;
+}
+
+.bar > * {
+  display: table-cell;
+  padding: 8px;
+  vertical-align: middle;
+  font-weight: 600;
+}
