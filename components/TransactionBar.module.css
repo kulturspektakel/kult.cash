@@ -14,3 +14,14 @@
   vertical-align: middle;
   font-weight: 600;
 }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding-right: 25px;
+}
+
+.header :global(.ant-radio-group) {
+  margin-top: -5px;
+  margin-bottom: -10px;
+}

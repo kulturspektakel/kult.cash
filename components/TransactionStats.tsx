@@ -6,11 +6,15 @@ import {revenueFromTransaction} from '../utils/transaction';
 import {ArrowUpOutlined} from '@ant-design/icons';
 import {useEffect, Suspense} from 'react';
 import React from 'react';
+import moment from 'moment';
+
 const Pie = React.lazy(() =>
   import('@ant-design/charts').then((module) => ({default: module.Pie})),
 );
 const Area = React.lazy(() =>
-  import('@ant-design/charts').then((module) => ({default: module.Area})),
+  import('@ant-design/charts').then((module) => ({
+    default: module.Area,
+  })),
 );
 
 type TableRow = {
@@ -36,14 +40,46 @@ export default function TransactionStats(props: {data: TransactionData[]}) {
   return (
     <div>
       <Row gutter={GUTTER}>
-        <Col>
+        <Col span={4}>
           <Statistic
             title="Umsatz"
-            value={11.28}
+            value={
+              props.data.reduce(
+                (acc, cv) => acc + revenueFromTransaction(cv),
+                0,
+              ) / 100
+            }
             precision={2}
             valueStyle={{color: '#3f8600'}}
             prefix={<ArrowUpOutlined />}
-            suffix="%"
+            suffix="€"
+          />
+        </Col>
+        <Col span={4}>
+          <Statistic title="Transaktionen" value={props.data.length} />
+        </Col>
+        <Col span={4}>
+          <Statistic
+            title="Pfandausgaben"
+            value={props.data.reduce(
+              (acc, cv) =>
+                cv.tokensAfter > cv.tokensBefore
+                  ? acc + cv.tokensAfter - cv.tokensBefore
+                  : acc,
+              0,
+            )}
+          />
+        </Col>
+        <Col span={4}>
+          <Statistic
+            title="Pfandrückgaben"
+            value={props.data.reduce(
+              (acc, cv) =>
+                cv.tokensAfter < cv.tokensBefore
+                  ? acc + cv.tokensBefore - cv.tokensAfter
+                  : acc,
+              0,
+            )}
           />
         </Col>
       </Row>
@@ -53,9 +89,6 @@ export default function TransactionStats(props: {data: TransactionData[]}) {
         </Col>
         <Col span={8}>
           <ProductPieChart data={data} />
-        </Col>
-        <Col span={8}>
-          <RevenuePerListTable data={props.data} />
         </Col>
       </Row>
       <Row gutter={GUTTER}>
@@ -76,11 +109,12 @@ function ProductTable(props: {data: Map<string, TableRow>}) {
     {
       title: 'Anzahl',
       dataIndex: 'amount',
+      align: 'right',
     },
-
     {
       title: 'Umsatz',
       dataIndex: 'revenue',
+      align: 'right',
       render: (p) => currencyFormatter.format(p / 100),
     },
   ];
@@ -95,13 +129,11 @@ function ProductTable(props: {data: Map<string, TableRow>}) {
         (a, b) => b.revenue - a.revenue,
       )}
       rowKey="product"
-      footer={() => <span>Summe</span>}
     />
   );
 }
 
 function ProductPieChart(props: {data: Map<string, TableRow>}) {
-  console.log(Pie);
   const data = Array.from(props.data.values()).map((v) => ({
     type: v.product,
     value: v.amount,
@@ -121,42 +153,6 @@ function ProductPieChart(props: {data: Map<string, TableRow>}) {
   );
 }
 
-function RevenuePerListTable(props: {data: TransactionData[]}) {
-  const data = props.data.reduce((acc, transaction) => {
-    const listName = transaction.listName || '(unbekannt)';
-    return acc.set(
-      listName,
-      acc.get(listName) ?? 0 + revenueFromTransaction(transaction),
-    );
-  }, new Map<string, number>());
-
-  return (
-    <Table
-      bordered
-      pagination={false}
-      size="small"
-      columns={[
-        {
-          title: 'Preisliste',
-          dataIndex: 'list',
-        },
-        {
-          title: 'Umsatz',
-          dataIndex: 'revenue',
-          render: (p) => currencyFormatter.format(p / 100),
-        },
-      ]}
-      dataSource={Array.from(data.entries())
-        .map(([list, revenue]) => ({
-          list,
-          revenue,
-        }))
-        .sort((a, b) => b.revenue - a.revenue)}
-      rowKey="list"
-    />
-  );
-}
-
 function RevenueOverTime(props: {data: TransactionData[]}) {
   const grouping = 3600000;
   const hours = props.data.reduce((acc, transaction) => {
@@ -165,9 +161,10 @@ function RevenueOverTime(props: {data: TransactionData[]}) {
     );
     return acc.set(
       hour,
-      acc.get(hour) ?? 0 + revenueFromTransaction(transaction) / 100,
+      (acc.get(hour) ?? 0) + revenueFromTransaction(transaction) / 100,
     );
   }, new Map<number, number>());
+
   const min = Math.min(...Array.from(hours.keys()));
   const max = Math.max(...Array.from(hours.keys()));
 
@@ -175,21 +172,20 @@ function RevenueOverTime(props: {data: TransactionData[]}) {
   for (let i = min; i <= max; i++) {
     const revenue = hours.get(i) ?? 0;
     data.push({
-      name: new Date(i * grouping),
+      hour: moment((min + i) * grouping).format('dd HH:00'),
       revenue,
+      type: 's',
     });
   }
   return (
     <Card title="Umsatz" size="small">
       <Suspense fallback={null}>
         <Area
+          forceFit
           data={data}
-          xField="Date"
-          yField="scales"
-          xAxis={{
-            type: 'dateTime',
-            tickCount: 5,
-          }}
+          xField="hour"
+          yField="revenue"
+          // stackField="type"
         />
       </Suspense>
     </Card>

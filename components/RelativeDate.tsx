@@ -10,7 +10,7 @@ export default memoize((value: number) => {
   }
   const m = moment(value);
   return (
-    <Tooltip title={m.format('DD.MM.YYYY hh:mm:ss')}>
+    <Tooltip title={m.format('DD.MM.YYYY HH:mm:ss')}>
       <span>{m.fromNow()}</span>
     </Tooltip>
   );

@@ -181,22 +181,25 @@ export default function Transactions({
 
   return (
     <App>
-      {!transactions ? (
-        <Spin size="large" style={{marginTop: 100}} />
-      ) : (
-        <VirtualTable<TransactionData>
-          bordered
-          size="small"
-          columns={columns}
-          dataSource={transactions}
-          pagination={false}
-          showSorterTooltip={false}
-          rowKey="id"
-          onChange={(_, __, ___, {currentDataSource}) =>
-            setCurrentDataSource(currentDataSource)
-          }
-        />
-      )}
+      <div style={{marginBottom: 70}}>
+        {!transactions ? (
+          <Spin size="large" style={{marginTop: 100}} />
+        ) : (
+          <VirtualTable<TransactionData>
+            bordered
+            size="small"
+            columns={columns}
+            dataSource={transactions}
+            pagination={false}
+            showSorterTooltip={false}
+            rowKey="id"
+            onChange={(_, __, ___, {currentDataSource}) =>
+              setCurrentDataSource(currentDataSource)
+            }
+          />
+        )}
+      </div>
+
       {data && <TransactionBar data={data} columns={columns} />}
     </App>
   );

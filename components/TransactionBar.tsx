@@ -15,7 +15,7 @@ export default function TransactionBar(props: {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [groupBy, setGroupBy] = useState<'list' | 'product'>('list');
 
-  const total = props.data.reduce(
+  const revenue = props.data.reduce(
     (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
     0,
   );
@@ -28,25 +28,25 @@ export default function TransactionBar(props: {
   const cards = props.data.reduce((acc, cv) => acc.add(cv.card), new Set())
     .size;
 
-  const onDownload = useCallback(() => {
-    zipcelx({
-      filename: 'transactions',
-      sheet: {
-        data: props.data.map((t) =>
-          Object.values(t).map((value) => ({
-            value: String(value),
-            type: 'string',
-          })),
-        ),
-      },
-    });
-  }, [props.data]);
+  // const onDownload = useCallback(() => {
+  //   zipcelx({
+  //     filename: 'transactions',
+  //     sheet: {
+  //       data: props.data.map((t) =>
+  //         Object.values(t).map((value) => ({
+  //           value: String(value),
+  //           type: 'string',
+  //         })),
+  //       ),
+  //     },
+  //   });
+  // }, [props.data]);
 
   const content = {
     deviceTime: <>{props.data.length} Transaktionen</>,
     card: <>{cards} Karten</>,
     deviceId: <>{devices} Geräte</>,
-    total: <>{currencyFormatter.format(total / 100)}</>,
+    total: <>{currencyFormatter.format(revenue / 100)}</>,
   };
 
   return (
@@ -62,7 +62,9 @@ export default function TransactionBar(props: {
     >
       <div className={styles.bar} onClick={() => setDrawerVisible(true)}>
         {props.columns.map((col) => (
-          <div style={{width: col.width}}>{content[col.key]}</div>
+          <div key={col.key} style={{width: col.width}}>
+            {content[col.key]}
+          </div>
         ))}
       </div>
 
@@ -79,18 +81,18 @@ export default function TransactionBar(props: {
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         title={
-          <>
+          <div className={styles.header}>
             Statistik
             <Radio.Group
               options={[
-                {label: 'nach Preislisten', value: 'list'},
+                {label: 'nach Buden', value: 'list'},
                 {label: 'nach Produkten', value: 'product'},
               ]}
               onChange={(e) => setGroupBy(e.target.value)}
               value={groupBy}
               optionType="button"
             />
-          </>
+          </div>
         }
         height="70%"
       >
