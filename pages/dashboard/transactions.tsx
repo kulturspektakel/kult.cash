@@ -2,10 +2,9 @@ import App from '../../components/App';
 import {
   useTransactions,
   useDevices,
-  useLists,
   TransactionData,
 } from '../../components/useData';
-import {Transaction, Device, List} from '@prisma/client';
+import {Transactions, Device, List} from '@prisma/client';
 import React, {useState, useEffect, useMemo} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
@@ -20,7 +19,6 @@ import {ColumnsType} from 'antd/lib/table';
 import {useRecoilState} from 'recoil';
 import {NextPageContext} from 'next';
 import {
-  getInitialLists,
   getInitialDevices,
   getInitialTransactions,
 } from '../../components/getInitialProps';
@@ -31,7 +29,7 @@ import {useRouter} from 'next/router';
 
 const getColums = (
   devices: Device[] | null,
-  listMap: Map<string, List> | undefined,
+  lists: Set<string>,
   dateRange: DateRange,
 ): ColumnsType<TransactionData> => [
   {
@@ -70,29 +68,14 @@ const getColums = (
     key: 'listName',
     dataIndex: 'listName',
     width: '25%',
-    filters: listMap
-      ? Array.from(listMap.values()).map(({name}) => ({
-          text: name,
-          value: name,
-        }))
-      : undefined,
+    filters:
+      lists.size > 0
+        ? Array.from(lists).map((name) => ({
+            text: name,
+            value: name,
+          }))
+        : undefined,
     onFilter: (value, t) => t.listName === value,
-    render: (listName: string, t) => {
-      const emoji = listMap?.get(listName)?.emoji;
-      return (
-        <>
-          {emoji && (
-            <>
-              <span style={{position: 'relative', top: 2}}>
-                <Emoji size={16} emoji={emoji} />
-              </span>
-              &nbsp;
-            </>
-          )}
-          {listName}
-        </>
-      );
-    },
   },
   {
     title: 'Umsatz',
@@ -123,16 +106,16 @@ const getColums = (
         </>
       );
     },
-    sorter: (a: Transaction, b: Transaction) =>
+    sorter: (a: Transactions, b: Transactions) =>
       a.balanceBefore - a.balanceAfter - (b.balanceBefore - b.balanceAfter),
   },
   {
     title: 'Pfand',
     key: 'token',
     width: '15%',
-    render: (_, transaction: Transaction) =>
+    render: (_, transaction: Transactions) =>
       transaction.tokensAfter - transaction.tokensBefore,
-    sorter: (a: Transaction, b: Transaction) =>
+    sorter: (a: Transactions, b: Transactions) =>
       a.tokensBefore - a.tokensAfter - (b.tokensBefore - b.tokensAfter),
   },
 ];
@@ -149,18 +132,15 @@ function useFilteredTransactions(initialTransactions?: TransactionData[]) {
   return filteredTransactions;
 }
 
-export default function Transactions({
-  initialLists,
+export default function TransactionsPage({
   initialDevices,
   initialTransactions,
 }: {
-  initialLists?: List[];
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
 }) {
   const transactions = useFilteredTransactions(initialTransactions);
   const {items: devices} = useDevices(initialDevices);
-  const {items: lists} = useLists(initialLists);
   const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<TransactionData[] | null>(null);
   const [currentDataSource, setCurrentDataSource] = useState<
@@ -172,16 +152,18 @@ export default function Transactions({
     currentDataSource,
   ]);
 
-  const listMap = lists?.reduce<Map<string, List>>(
-    (acc, cv) => acc.set(cv.name, cv),
-    new Map(),
-  );
+  const lists = transactions?.reduce<Set<string>>((acc, cv) => {
+    if (cv.listName) {
+      acc.add(cv.listName);
+    }
+    return acc;
+  }, new Set());
 
-  const columns = getColums(devices, listMap, timeRange);
+  const columns = getColums(devices, lists, timeRange);
 
   return (
     <App>
-      <div style={{marginBottom: 70}}>
+      <div style={{flexGrow: 1}}>
         {!transactions ? (
           <Spin size="large" style={{marginTop: 100}} />
         ) : (
@@ -199,21 +181,15 @@ export default function Transactions({
           />
         )}
       </div>
-
       {data && <TransactionBar data={data} columns={columns} />}
     </App>
   );
 }
 
-Transactions.getInitialProps = async ({req}: NextPageContext) => {
-  const [
-    initialLists,
-    initialDevices,
-    initialTransactions,
-  ] = await Promise.all([
-    getInitialLists(req),
+TransactionsPage.getInitialProps = async ({req}: NextPageContext) => {
+  const [initialDevices, initialTransactions] = await Promise.all([
     getInitialDevices(req),
     getInitialTransactions(req),
   ]);
-  return {initialLists, initialDevices, initialTransactions};
+  return {initialDevices, initialTransactions};
 };

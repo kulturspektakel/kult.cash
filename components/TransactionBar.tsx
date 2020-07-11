@@ -8,6 +8,7 @@ import {TransactionData} from './useData';
 import {ColumnsType} from 'antd/lib/table';
 import styles from './TransactionBar.module.css';
 
+export const BAR_HEIGHT = 60;
 export default function TransactionBar(props: {
   data: TransactionData[];
   columns: ColumnsType<TransactionData>;
@@ -50,20 +51,11 @@ export default function TransactionBar(props: {
   };
 
   return (
-    <Drawer
-      placement="bottom"
-      visible
-      closable={false}
-      mask={false}
-      height={60}
-      bodyStyle={{
-        padding: 0,
-      }}
-    >
+    <>
       <div className={styles.bar} onClick={() => setDrawerVisible(true)}>
         {props.columns.map((col) => (
           <div key={col.key} style={{width: col.width}}>
-            {content[col.key]}
+            {content[col.key as keyof typeof content]}
           </div>
         ))}
       </div>
@@ -98,6 +90,6 @@ export default function TransactionBar(props: {
       >
         <TransactionStats data={props.data} />
       </Drawer>
-    </Drawer>
+    </>
   );
 }

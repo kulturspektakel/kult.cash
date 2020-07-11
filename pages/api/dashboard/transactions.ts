@@ -5,7 +5,7 @@ import dashboardAuthentication from '../../../utils/dashboardAuthentication';
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   await dashboardAuthentication(req, res);
 
-  const transactions = await prismaClient.transaction.findMany({
+  const transactions = await prismaClient.transactions.findMany({
     include: {
       cartItems: {
         select: {

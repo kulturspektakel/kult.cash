@@ -21,7 +21,7 @@
         "source": "sqlite"
       },
       "argument": "url",
-      "value": "\"file:./contactless.db\""
+      "value": "\"***\""
     },
     {
       "tag": "CreateModel",
@@ -63,7 +63,7 @@
       "tag": "CreateField",
       "model": "Device",
       "field": "transactions",
-      "type": "Transaction",
+      "type": "Transactions",
       "arity": "List"
     },
     {
@@ -283,11 +283,11 @@
     },
     {
       "tag": "CreateModel",
-      "model": "Transaction"
+      "model": "Transactions"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "id",
       "type": "String",
       "arity": "Required"
@@ -297,7 +297,7 @@
       "location": {
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "id"
         },
         "directive": "id"
@@ -305,7 +305,7 @@
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "device",
       "type": "Device",
       "arity": "Required"
@@ -315,7 +315,7 @@
       "location": {
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "device"
         },
         "directive": "relation"
@@ -327,7 +327,7 @@
         "tag": "Directive",
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "device"
         },
         "directive": "relation"
@@ -341,7 +341,7 @@
         "tag": "Directive",
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "device"
         },
         "directive": "relation"
@@ -351,77 +351,77 @@
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "deviceId",
       "type": "String",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "mode",
       "type": "Int",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "deviceTime",
       "type": "DateTime",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "card",
       "type": "String",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "balanceBefore",
       "type": "Int",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "tokensBefore",
       "type": "Int",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "balanceAfter",
       "type": "Int",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "tokensAfter",
       "type": "Int",
       "arity": "Required"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "listName",
       "type": "String",
-      "arity": "Required"
+      "arity": "Optional"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "cartItems",
       "type": "CartItem",
       "arity": "List"
     },
     {
       "tag": "CreateField",
-      "model": "Transaction",
+      "model": "Transactions",
       "field": "createdAt",
       "type": "DateTime",
       "arity": "Required"
@@ -431,7 +431,7 @@
       "location": {
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "createdAt"
         },
         "directive": "default"
@@ -443,7 +443,7 @@
         "tag": "Directive",
         "path": {
           "tag": "Field",
-          "model": "Transaction",
+          "model": "Transactions",
           "field": "createdAt"
         },
         "directive": "default"
@@ -459,7 +459,7 @@
       "tag": "CreateField",
       "model": "CartItem",
       "field": "transaction",
-      "type": "Transaction",
+      "type": "Transactions",
       "arity": "Required"
     },
     {

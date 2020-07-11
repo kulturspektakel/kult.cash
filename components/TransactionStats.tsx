@@ -8,6 +8,8 @@ import {useEffect, Suspense} from 'react';
 import React from 'react';
 import moment from 'moment';
 
+const UNKNOWN = '(unbekannt)';
+
 const Pie = React.lazy(() =>
   import('@ant-design/charts').then((module) => ({default: module.Pie})),
 );
@@ -26,14 +28,27 @@ type TableRow = {
 export default function TransactionStats(props: {data: TransactionData[]}) {
   const GUTTER: [number, number] = [16, 16];
   const data = props.data.reduce((acc, transaction) => {
-    transaction.cartItems.forEach((line) =>
-      acc.set(line.product, {
+    let revenueFromKnownSource = 0;
+    transaction.cartItems.forEach((line) => {
+      const revenue = line.price * line.amount;
+      revenueFromKnownSource += revenue;
+      return acc.set(line.product, {
         product: line.product,
         amount: (acc.get(line.product)?.amount ?? 0) + line.amount,
-        revenue:
-          (acc.get(line.product)?.revenue ?? 0) + line.price * line.amount,
-      }),
-    );
+        revenue: (acc.get(line.product)?.revenue ?? 0) + revenue,
+      });
+    });
+
+    const revenueFromUnknownSource =
+      revenueFromKnownSource - revenueFromTransaction(transaction);
+    if (revenueFromUnknownSource > 0) {
+      acc.set(UNKNOWN, {
+        product: UNKNOWN,
+        amount: (acc.get(UNKNOWN)?.amount ?? 0) + 1,
+        revenue: (acc.get(UNKNOWN)?.revenue ?? 0) + revenueFromUnknownSource,
+      });
+    }
+
     return acc;
   }, new Map<string, TableRow>());
 

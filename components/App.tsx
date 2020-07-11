@@ -12,7 +12,7 @@ const ROUTES = {
   '/dashboard/transactions?bonbude=1': 'Bonbuden',
 };
 
-export default function ({children}: {children: React.ReactNode}) {
+export default function ({children}: {children: React.ReactNode; style?: any}) {
   const router = useRouter();
 
   return (

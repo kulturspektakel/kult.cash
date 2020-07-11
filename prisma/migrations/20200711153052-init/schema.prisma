@@ -11,7 +11,7 @@ model Device {
   id            String        @id
   lastSeen      DateTime?
   latestVersion Int?
-  transactions  Transaction[]
+  transactions  Transactions[]
   list          List?         @relation(fields: [listName], references: [name])
   listName      String?
 }
@@ -40,7 +40,7 @@ model List {
   devices  Device[]
 }
 
-model Transaction {
+model Transactions {
   id            String     @id
   device        Device     @relation(fields: [deviceId], references: [id])
   deviceId      String
@@ -51,13 +51,13 @@ model Transaction {
   tokensBefore  Int
   balanceAfter  Int
   tokensAfter   Int
-  listName      String
+  listName      String?
   cartItems     CartItem[]
   createdAt     DateTime   @default(now())
 }
 
 model CartItem {
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transaction   Transactions @relation(fields: [transactionId], references: [id])
   transactionId String
   product       String
   price         Int

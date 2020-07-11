@@ -6,7 +6,7 @@ import {
   Device,
   ListUpdateInput,
   ListCreateInput,
-  Transaction,
+  Transactions,
   CartItem,
 } from '@prisma/client';
 import {message} from 'antd';
@@ -117,7 +117,7 @@ export const useLists = generateHook<List, ListUpdateInput, ListCreateInput>(
   listsAtom,
 );
 
-export type TransactionData = Transaction & {cartItems: CartItem[]};
+export type TransactionData = Transactions & {cartItems: CartItem[]};
 
 export const useTransactions = generateHook<
   TransactionData,

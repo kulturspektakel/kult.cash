@@ -65,37 +65,40 @@ export default function VirtualTable<RecordType extends object>(
   if (props.rowSelection) {
     columnCount++;
   }
-
   return (
     <ReactResizeDetector
       handleWidth
       handleHeight
-      onResize={(width, height) => setSize({width, height})}
+      onResize={(width, height) =>
+        // prevent rounding errors
+        setSize({width: Math.floor(width), height: Math.floor(height)})
+      }
     >
-      <Table
-        {...props}
-        scroll={{y: size.height, x: size.width}}
-        style={{visibility: size.height > 0 ? 'visible' : 'hidden'}}
-        className="virtual-table"
-        columns={mergedColumns}
-        pagination={false}
-        components={{
-          body: (rawData) => (
-            <VariableSizeGrid
-              ref={gridRef}
-              className="virtual-grid"
-              columnCount={columnCount}
-              columnWidth={(index) => mergedColumns[index].width}
-              height={size.height - ROW_HEIGHT}
-              rowCount={rawData.length}
-              rowHeight={() => ROW_HEIGHT}
-              width={size.width - 1}
-            >
-              {Cell(mergedColumns, rawData)}
-            </VariableSizeGrid>
-          ),
-        }}
-      />
+      {size.height > 0 && (
+        <Table
+          {...props}
+          scroll={{y: size.height, x: size.width}}
+          className="virtual-table"
+          columns={mergedColumns}
+          pagination={false}
+          components={{
+            body: (rawData) => (
+              <VariableSizeGrid
+                ref={gridRef}
+                className="virtual-grid"
+                columnCount={columnCount}
+                columnWidth={(index) => mergedColumns[index].width}
+                height={size.height - ROW_HEIGHT}
+                rowCount={rawData.length}
+                rowHeight={() => ROW_HEIGHT}
+                width={size.width - 1}
+              >
+                {Cell(mergedColumns, rawData)}
+              </VariableSizeGrid>
+            ),
+          }}
+        />
+      )}
     </ReactResizeDetector>
   );
 }

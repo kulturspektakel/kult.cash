@@ -8,10 +8,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   const deviceInput: DeviceCreateInput | null = JSON.parse(req.body || 'null');
   if (deviceInput && (req.method === 'POST' || req.method === 'PUT')) {
-    const {list, ...device} = deviceInput;
+    let {list, ...device} = deviceInput;
     await prismaClient.device.upsert({
       create: device,
-      update: {...device, list},
+      update: {
+        ...device,
+        // Why, TS, why?!
+        list: list ?? undefined,
+        transactions: device.transactions ?? undefined,
+      },
       where: {
         id: device.id,
       },

@@ -1,5 +1,5 @@
 import {WebClient} from '@slack/web-api';
-import {Transaction} from '@prisma/client';
+import {Transactions} from '@prisma/client';
 import currencyFormatter from './currencyFormatter';
 import prismaClient from './prismaClient';
 
@@ -13,7 +13,7 @@ export async function postDeviceUpdate(id: string, version: number) {
   });
 }
 
-export async function postTransaction(transaction: Transaction) {
+export async function postTransaction(transaction: Transactions) {
   const listName = transaction.listName;
   const total = currencyFormatter.format(
     (transaction.balanceBefore - transaction.balanceAfter) / 100,
@@ -26,11 +26,14 @@ export async function postTransaction(transaction: Transaction) {
     },
   });
 
-  const list = await prismaClient.list.findOne({
-    where: {
-      name: transaction.listName,
-    },
-  });
+  let list;
+  if (listName) {
+    list = await prismaClient.list.findOne({
+      where: {
+        name: listName,
+      },
+    });
+  }
 
   const products = cart
     .map((item) => `${item.amount}× ${item.product}`)

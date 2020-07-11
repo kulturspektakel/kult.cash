@@ -1,12 +1,11 @@
 import prismaClient from './prismaClient';
-import {DeviceCreateInput} from '@prisma/client';
 import {NextApiRequest} from 'next';
 
 export function parseUserAgent(
   req: NextApiRequest,
-): {id: string | null; version: number | null} {
-  let version = null;
-  let id = null;
+): {id: string | undefined; version: number | undefined} {
+  let version = undefined;
+  let id = undefined;
 
   const userAgent = req.headers['user-agent'];
   if (userAgent) {
@@ -26,7 +25,7 @@ export default async function (req: NextApiRequest) {
   const {id, version} = parseUserAgent(req);
 
   if (id) {
-    const device: DeviceCreateInput = {
+    const device = {
       id,
       lastSeen: new Date(),
       latestVersion: version,

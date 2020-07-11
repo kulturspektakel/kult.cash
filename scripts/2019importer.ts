@@ -1,3 +1,5 @@
+#!/usr/bin/env npx ts-node --script-mode
+
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -71,7 +73,7 @@ async function parseLine(line: string) {
     },
   });
 
-  await prismaClient.transaction.delete({
+  await prismaClient.transactions.deleteMany({
     where: {
       id,
     },
@@ -81,7 +83,7 @@ async function parseLine(line: string) {
   let listName = path.basename(program.input, path.extname(program.input));
   listName = listName.charAt(0).toUpperCase() + listName.slice(1);
 
-  const transaction = await prismaClient.transaction.create({
+  const transaction = await prismaClient.transactions.create({
     data: {
       id,
       mode,

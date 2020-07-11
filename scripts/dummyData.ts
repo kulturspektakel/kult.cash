@@ -1,3 +1,5 @@
+#!/usr/bin/env npx ts-node-script
+
 import prismaClient from '../utils/prismaClient';
 
 (async () => {
@@ -17,7 +19,7 @@ import prismaClient from '../utils/prismaClient';
 
   for (let i = 0; i < 10000; i++) {
     const balanceBefore = Math.floor(Math.random() * 10000);
-    await prismaClient.transaction.create({
+    await prismaClient.transactions.create({
       data: {
         balanceAfter: Math.max(
           0,

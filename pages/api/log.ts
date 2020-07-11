@@ -28,7 +28,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         defaults: true,
       }) as ITransactionMessage;
 
-      const existingTransaction = await prismaClient.transaction.findOne({
+      const existingTransaction = await prismaClient.transactions.findOne({
         where: {id: data.id},
       });
       if (existingTransaction) {
@@ -50,7 +50,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           .values(),
       );
 
-      const transaction = await prismaClient.transaction.create({
+      const transaction = await prismaClient.transactions.create({
         data: {
           ...data,
           device: {
