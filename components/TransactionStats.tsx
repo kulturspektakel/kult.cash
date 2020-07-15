@@ -3,8 +3,12 @@ import {Table, Row, Col, Card, Statistic} from 'antd';
 import currencyFormatter from '../utils/currencyFormatter';
 import {ColumnsType} from 'antd/lib/table';
 import {revenueFromTransaction} from '../utils/transaction';
-import {ArrowUpOutlined} from '@ant-design/icons';
-import {useEffect, Suspense} from 'react';
+import {
+  ArrowUpOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+} from '@ant-design/icons';
+import {Suspense} from 'react';
 import React from 'react';
 import moment from 'moment';
 
@@ -13,44 +17,106 @@ const UNKNOWN = '(unbekannt)';
 const Pie = React.lazy(() =>
   import('@ant-design/charts').then((module) => ({default: module.Pie})),
 );
-const Area = React.lazy(() =>
+const StackedArea = React.lazy(() =>
   import('@ant-design/charts').then((module) => ({
-    default: module.Area,
+    default: module.StackedArea,
   })),
 );
 
+export enum GroupBy {
+  Product,
+  List,
+}
+
 type TableRow = {
-  product: string;
+  key: string;
   amount: number;
   revenue: number;
 };
 
-export default function TransactionStats(props: {data: TransactionData[]}) {
+function color(label: string): string {
+  const COLOR_PLATE_20 = [
+    '#5B8FF9',
+    '#BDD2FD',
+    '#5AD8A6',
+    '#BDEFDB',
+    '#5D7092',
+    '#C2C8D5',
+    '#F6BD16',
+    '#FBE5A2',
+    '#E8684A',
+    '#F6C3B7',
+    '#6DC8EC',
+    '#B6E3F5',
+    '#9270CA',
+    '#D3C6EA',
+    '#FF9D4D',
+    '#FFD8B8',
+    '#269A99',
+    '#AAD8D8',
+    '#FF99C3',
+    '#FFD6E7',
+  ];
+
+  return COLOR_PLATE_20[
+    parseInt(label.replace(/[^A-Za-z0-9]/g, ''), 36) % COLOR_PLATE_20.length
+  ];
+}
+
+function groupByProdcut(
+  acc: Map<string, TableRow>,
+  transaction: TransactionData,
+) {
+  let revenueFromKnownSource = 0;
+
+  transaction.cartItems.forEach((line) => {
+    const revenue = line.price * line.amount;
+    revenueFromKnownSource += revenue;
+    const key = line.product;
+    const item = acc.get(key) ?? {
+      key,
+      amount: 0,
+      revenue: 0,
+    };
+    item.revenue += revenue;
+    item.amount += line.amount;
+    acc.set(key, item);
+  });
+
+  const revenueFromUnknownSource =
+    revenueFromKnownSource - revenueFromTransaction(transaction);
+  if (revenueFromUnknownSource > 0) {
+    const item = acc.get(UNKNOWN) ?? {
+      key: UNKNOWN,
+      amount: 0,
+      revenue: 0,
+    };
+    item.amount++;
+    item.revenue += revenueFromUnknownSource;
+    acc.set(UNKNOWN, item);
+  }
+
+  return acc;
+}
+
+function groupByList(acc: Map<string, TableRow>, transaction: TransactionData) {
+  const key = transaction.listName || UNKNOWN;
+  const item = acc.get(key) ?? {
+    key,
+    amount: 0,
+    revenue: 0,
+  };
+  item.amount++;
+  item.revenue += revenueFromTransaction(transaction);
+
+  return acc.set(key, item);
+}
+
+export default function TransactionStats(props: {
+  data: TransactionData[];
+  groupBy: GroupBy;
+}) {
   const GUTTER: [number, number] = [16, 16];
-  const data = props.data.reduce((acc, transaction) => {
-    let revenueFromKnownSource = 0;
-    transaction.cartItems.forEach((line) => {
-      const revenue = line.price * line.amount;
-      revenueFromKnownSource += revenue;
-      return acc.set(line.product, {
-        product: line.product,
-        amount: (acc.get(line.product)?.amount ?? 0) + line.amount,
-        revenue: (acc.get(line.product)?.revenue ?? 0) + revenue,
-      });
-    });
-
-    const revenueFromUnknownSource =
-      revenueFromKnownSource - revenueFromTransaction(transaction);
-    if (revenueFromUnknownSource > 0) {
-      acc.set(UNKNOWN, {
-        product: UNKNOWN,
-        amount: (acc.get(UNKNOWN)?.amount ?? 0) + 1,
-        revenue: (acc.get(UNKNOWN)?.revenue ?? 0) + revenueFromUnknownSource,
-      });
-    }
-
-    return acc;
-  }, new Map<string, TableRow>());
 
   return (
     <div>
@@ -83,6 +149,7 @@ export default function TransactionStats(props: {data: TransactionData[]}) {
                   : acc,
               0,
             )}
+            prefix={<LogoutOutlined />}
           />
         </Col>
         <Col span={4}>
@@ -95,31 +162,32 @@ export default function TransactionStats(props: {data: TransactionData[]}) {
                   : acc,
               0,
             )}
+            prefix={<LoginOutlined />}
           />
         </Col>
       </Row>
       <Row gutter={GUTTER}>
-        <Col span={8}>
-          <ProductTable data={data} />
-        </Col>
-        <Col span={8}>
-          <ProductPieChart data={data} />
+        <Col span={24}>
+          <RevenueOverTime data={props.data} groupBy={props.groupBy} />
         </Col>
       </Row>
       <Row gutter={GUTTER}>
-        <Col span={16}>
-          <RevenueOverTime data={props.data} />
-        </Col>
+        <ProductTable data={props.data} groupBy={props.groupBy} />
       </Row>
     </div>
   );
 }
 
-function ProductTable(props: {data: Map<string, TableRow>}) {
+function ProductTable(props: {data: TransactionData[]; groupBy: GroupBy}) {
+  const data = props.data.reduce<Map<string, TableRow>>(
+    props.groupBy === GroupBy.Product ? groupByProdcut : groupByList,
+    new Map<string, TableRow>(),
+  );
+
   const columns: ColumnsType<TableRow> = [
     {
       title: 'Produkt',
-      dataIndex: 'product',
+      dataIndex: 'key',
     },
     {
       title: 'Anzahl',
@@ -135,72 +203,98 @@ function ProductTable(props: {data: Map<string, TableRow>}) {
   ];
 
   return (
-    <Table<TableRow>
-      bordered
-      pagination={false}
-      size="small"
-      columns={columns}
-      dataSource={Array.from(props.data.values()).sort(
-        (a, b) => b.revenue - a.revenue,
-      )}
-      rowKey="product"
-    />
-  );
-}
-
-function ProductPieChart(props: {data: Map<string, TableRow>}) {
-  const data = Array.from(props.data.values()).map((v) => ({
-    type: v.product,
-    value: v.amount,
-  }));
-  return (
-    <Card title="Anzahl" size="small">
-      <Suspense fallback={null}>
-        <Pie
-          forceFit
-          radius={0.8}
-          data={data}
-          angleField="value"
-          colorField="type"
+    <>
+      <Col span={8}>
+        <Table<TableRow>
+          bordered
+          pagination={false}
+          size="small"
+          columns={columns}
+          dataSource={Array.from(data.values()).sort(
+            (a, b) => b.revenue - a.revenue,
+          )}
+          rowKey="product"
         />
-      </Suspense>
-    </Card>
+      </Col>
+      <Col span={8}>
+        <Card title="Anzahl" size="small">
+          <Suspense fallback={null}>
+            <Pie
+              forceFit
+              radius={0.8}
+              data={Array.from(data.values()).map((v) => ({
+                type: v.key,
+                value: v.amount,
+              }))}
+              angleField="value"
+              colorField="type"
+              color={color}
+            />
+          </Suspense>
+        </Card>
+      </Col>
+    </>
   );
 }
 
-function RevenueOverTime(props: {data: TransactionData[]}) {
-  const grouping = 3600000;
-  const hours = props.data.reduce((acc, transaction) => {
-    const hour = Math.round(
-      new Date(transaction.deviceTime).getTime() / grouping,
-    );
-    return acc.set(
-      hour,
-      (acc.get(hour) ?? 0) + revenueFromTransaction(transaction) / 100,
-    );
-  }, new Map<number, number>());
+function RevenueOverTime(props: {data: TransactionData[]; groupBy: GroupBy}) {
+  const timeGroup = 3600000;
+  let min = Infinity;
+  let max = -Infinity;
 
-  const min = Math.min(...Array.from(hours.keys()));
-  const max = Math.max(...Array.from(hours.keys()));
+  const hours = props.data.reduce<Map<number, Map<string, TableRow>>>(
+    (acc, transaction) => {
+      const hour = Math.round(
+        new Date(transaction.deviceTime).getTime() / timeGroup,
+      );
+      min = Math.min(min, hour);
+      max = Math.max(max, hour);
 
-  const data = [];
+      if (!acc.has(hour)) {
+        acc.set(hour, new Map());
+      }
+
+      const childMap = acc.get(hour)!;
+      if (props.groupBy === GroupBy.Product) {
+        groupByProdcut(childMap, transaction);
+      } else {
+        groupByList(childMap, transaction);
+      }
+      return acc;
+    },
+    new Map(),
+  );
+
+  const groups = new Set<string>(
+    Array.from(hours.values()).flatMap((map) => Array.from(map.keys())),
+  );
+
+  // generate 0 values
+  const data: Array<{
+    hour: string;
+    revenue: number;
+    type: string;
+  }> = [];
   for (let i = min; i <= max; i++) {
-    const revenue = hours.get(i) ?? 0;
-    data.push({
-      hour: moment((min + i) * grouping).format('dd HH:00'),
-      revenue,
-      type: 's',
-    });
+    for (let group of groups) {
+      data.push({
+        hour: moment(i * timeGroup).format('dd HH:00'),
+        revenue: (hours.get(i)?.get(group)?.revenue ?? 0) / 100,
+        type: group,
+      });
+    }
   }
+
   return (
     <Card title="Umsatz" size="small">
       <Suspense fallback={null}>
-        <Area
+        <StackedArea
           forceFit
           data={data}
           xField="hour"
           yField="revenue"
-          // stackField="type"
+          stackField="type"
+          color={color}
         />
       </Suspense>
     </Card>

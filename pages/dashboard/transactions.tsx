@@ -14,7 +14,7 @@ import TimeFilter, {
   DateRange,
 } from '../../components/TimeFilter';
 import VirtualTable from '../../components/VirtualTable';
-import {Spin, Tooltip} from 'antd';
+import {Spin, Tooltip, Button} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
 import {useRecoilState} from 'recoil';
 import {NextPageContext} from 'next';
@@ -22,22 +22,27 @@ import {
   getInitialDevices,
   getInitialTransactions,
 } from '../../components/getInitialProps';
-import {Emoji} from 'emoji-mart';
 import {revenueFromTransaction, filterBonbude} from '../../utils/transaction';
 import {ShoppingCartOutlined} from '@ant-design/icons';
 import {useRouter} from 'next/router';
+import styles from './transactions.module.css';
+import moment from 'antd/node_modules/moment';
 
 const getColums = (
   devices: Device[] | null,
   lists: Set<string>,
   dateRange: DateRange,
+  [cardFilter, setCardFilter]: [
+    string | null,
+    React.Dispatch<React.SetStateAction<string | null>>,
+  ],
 ): ColumnsType<TransactionData> => [
   {
     title: 'Zeit',
     dataIndex: 'deviceTime',
     key: 'deviceTime',
     width: '15%',
-    render: RelativeDate,
+    render: (date) => moment(date).format('dd. DD.MM.YYYY HH:mm'),
     sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
     filterDropdown: TimeFilter,
     onFilter: (value) => {
@@ -51,6 +56,15 @@ const getColums = (
     dataIndex: 'card',
     key: 'card',
     width: '15%',
+    filterDropdown: () => setCardFilter(null),
+    // filteredValue: [cardFilter[0]],
+    // filters: cardFilter[0] ? [cardFilter[0]] : undefined,
+    render: (cardID) => (
+      <a onClick={() => setCardFilter(cardID)} className={styles.cardCell}>
+        {cardID}
+      </a>
+    ),
+    onFilter: (value) => cardFilter === null || cardFilter === value,
   },
   {
     title: 'Gerät',
@@ -81,40 +95,44 @@ const getColums = (
     title: 'Umsatz',
     key: 'total',
     width: '15%',
+    align: 'right',
     render: (_, transaction) => {
       return (
-        <>
-          <span>
-            {currencyFormatter.format(
-              revenueFromTransaction(transaction) / 100,
-            )}
-          </span>
+        <div className={styles.revenueCell}>
+          {currencyFormatter.format(revenueFromTransaction(transaction) / 100)}
           {transaction.cartItems.length > 0 && (
-            <>
-              &nbsp;
-              <Tooltip
-                title={transaction.cartItems.map((item) => (
-                  <div key={item.product}>
-                    {item.amount}&times;&nbsp;{item.product}
-                  </div>
-                ))}
-              >
-                <ShoppingCartOutlined />
-              </Tooltip>
-            </>
+            <Tooltip
+              title={transaction.cartItems.map((item) => (
+                <div key={item.product}>
+                  {item.amount}&times;&nbsp;{item.product}
+                </div>
+              ))}
+            >
+              <ShoppingCartOutlined color="#4591F7" />
+            </Tooltip>
           )}
-        </>
+        </div>
       );
     },
-    sorter: (a: Transactions, b: Transactions) =>
-      a.balanceBefore - a.balanceAfter - (b.balanceBefore - b.balanceAfter),
+    sorter: (a: TransactionData, b: TransactionData) =>
+      revenueFromTransaction(a) - revenueFromTransaction(b),
   },
   {
     title: 'Pfand',
     key: 'token',
     width: '15%',
-    render: (_, transaction: Transactions) =>
-      transaction.tokensAfter - transaction.tokensBefore,
+    render: (_, transaction: Transactions) => {
+      const tokenBalance = transaction.tokensAfter - transaction.tokensBefore;
+      if (tokenBalance === 0) {
+        return null;
+      }
+      return (
+        <>
+          {Math.abs(tokenBalance)}&times;&nbsp;
+          {tokenBalance > 0 ? 'Ausgabe' : 'Rückgabe'}
+        </>
+      );
+    },
     sorter: (a: Transactions, b: Transactions) =>
       a.tokensBefore - a.tokensAfter - (b.tokensBefore - b.tokensAfter),
   },
@@ -143,6 +161,7 @@ export default function TransactionsPage({
   const {items: devices} = useDevices(initialDevices);
   const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<TransactionData[] | null>(null);
+  const cardFilter = useState<string | null>(null);
   const [currentDataSource, setCurrentDataSource] = useState<
     TransactionData[] | null
   >(null);
@@ -152,18 +171,19 @@ export default function TransactionsPage({
     currentDataSource,
   ]);
 
-  const lists = transactions?.reduce<Set<string>>((acc, cv) => {
-    if (cv.listName) {
-      acc.add(cv.listName);
-    }
-    return acc;
-  }, new Set());
+  const lists =
+    transactions?.reduce<Set<string>>((acc, cv) => {
+      if (cv.listName) {
+        acc.add(cv.listName);
+      }
+      return acc;
+    }, new Set()) ?? new Set();
 
-  const columns = getColums(devices, lists, timeRange);
+  const columns = getColums(devices, lists, timeRange, cardFilter);
 
   return (
     <App>
-      <div style={{flexGrow: 1}}>
+      <div className={styles.transactionsTableContainer}>
         {!transactions ? (
           <Spin size="large" style={{marginTop: 100}} />
         ) : (

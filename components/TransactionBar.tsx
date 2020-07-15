@@ -1,6 +1,6 @@
 import currencyFormatter from '../utils/currencyFormatter';
 import {Button, Drawer, Radio} from 'antd';
-import TransactionStats from './TransactionStats';
+import TransactionStats, {GroupBy} from './TransactionStats';
 import {useState, useCallback} from 'react';
 import {FileExcelOutlined} from '@ant-design/icons';
 import zipcelx from 'zipcelx';
@@ -14,7 +14,7 @@ export default function TransactionBar(props: {
   columns: ColumnsType<TransactionData>;
 }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [groupBy, setGroupBy] = useState<'list' | 'product'>('list');
+  const [groupBy, setGroupBy] = useState<GroupBy>(GroupBy.List);
 
   const revenue = props.data.reduce(
     (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
@@ -77,8 +77,8 @@ export default function TransactionBar(props: {
             Statistik
             <Radio.Group
               options={[
-                {label: 'nach Buden', value: 'list'},
-                {label: 'nach Produkten', value: 'product'},
+                {label: 'nach Buden', value: GroupBy.List},
+                {label: 'nach Produkten', value: GroupBy.Product},
               ]}
               onChange={(e) => setGroupBy(e.target.value)}
               value={groupBy}
@@ -88,7 +88,7 @@ export default function TransactionBar(props: {
         }
         height="70%"
       >
-        <TransactionStats data={props.data} />
+        <TransactionStats data={props.data} groupBy={groupBy} />
       </Drawer>
     </>
   );

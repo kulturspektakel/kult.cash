@@ -34,7 +34,7 @@
     "fs-extra": "^9.0.0",
     "lodash.memoize": "^4.1.2",
     "moment": "^2.24.0",
-    "next": "^9.4.4",
+    "next": "^9.4.5-canary.34",
     "next-absolute-url": "^1.2.2",
     "protobufjs": "^6.9.0",
     "rc-resize-observer": "^0.2.1",
