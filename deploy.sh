@@ -1,8 +1,7 @@
-rm -rf dist
+rm -rf dist .next
 git reset --hard HEAD
 git pull
 yarn install
 yarn build
-yarn setup
 
 supervisorctl restart kult.cash

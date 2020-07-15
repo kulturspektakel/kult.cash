@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "yarn migrate && node server.js",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js",
-    "setup": "prisma migrate up --experimental --create-db",
+    "start": "yarn migrate && NODE_ENV=production node server.js",
+    "migrate": "prisma migrate up --experimental --create-db",
     "proto": "rm -f proto/index.js proto/index.d.ts && yarn pbjs -t static-module -w commonjs -o proto/index.js proto/* --es6 && yarn pbts -o proto/index.d.ts proto/index.js",
     "postinstall": "prisma generate && yarn proto"
   },
