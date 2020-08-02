@@ -1,9 +1,5 @@
 import App from '../../components/App';
-import {
-  useTransactions,
-  useDevices,
-  TransactionData,
-} from '../../components/useData';
+import {useDevices, TransactionData, getAPIUrl} from '../../components/useData';
 import {Transactions, Device, List} from '@prisma/client';
 import React, {useState, useEffect, useMemo} from 'react';
 import TransactionBar from '../../components/TransactionBar';
@@ -21,15 +17,16 @@ import {NextPageContext} from 'next';
 import {
   getInitialDevices,
   getInitialTransactions,
-} from '../../components/getInitialProps';
+} from '../../utils/initialProps';
 import {revenueFromTransaction, filterBonbude} from '../../utils/transaction';
 import {ShoppingCartOutlined} from '@ant-design/icons';
 import {useRouter} from 'next/router';
 import styles from './transactions.module.css';
 import moment from 'antd/node_modules/moment';
+import useSWR from 'swr';
 
 const getColums = (
-  devices: Device[] | null,
+  devices: Device[] | undefined,
   lists: Set<string>,
   dateRange: DateRange,
   [cardFilter, setCardFilter]: [
@@ -142,7 +139,9 @@ function useFilteredTransactions(initialTransactions?: TransactionData[]) {
   const router = useRouter();
   const isBonbude = Boolean(router.query.bonbude);
   useEffect(() => {}, []);
-  const {items} = useTransactions(initialTransactions);
+  const {data: items} = useSWR(getAPIUrl('transactions'), {
+    initialData: initialTransactions,
+  });
   const filteredTransactions = useMemo(
     () => items?.filter((t) => filterBonbude(t) === isBonbude),
     [items, isBonbude],
@@ -158,7 +157,9 @@ export default function TransactionsPage({
   initialTransactions?: TransactionData[];
 }) {
   const transactions = useFilteredTransactions(initialTransactions);
-  const {items: devices} = useDevices(initialDevices);
+  const {data: devices} = useSWR(getAPIUrl('devices'), {
+    initialData: initialDevices,
+  });
   const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<TransactionData[] | null>(null);
   const cardFilter = useState<string | null>(null);

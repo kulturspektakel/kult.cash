@@ -1,14 +1,12 @@
 import {Col, Row, Modal, PageHeader, Button, Input, Spin, Empty} from 'antd';
 import App from '../../components/App';
-import {useLists, useDevices} from '../../components/useData';
 import ProductList from '../../components/ProductList';
 import {ListUpdateInput, List, Device} from '@prisma/client';
 import {useState, useCallback} from 'react';
 import {NextPageContext} from 'next';
-import {
-  getInitialLists,
-  getInitialDevices,
-} from '../../components/getInitialProps';
+import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
+import useSWR from 'swr';
+import {getAPIUrl, useLists} from '../../components/useData';
 
 export default function Lists({
   initialLists,
@@ -17,10 +15,13 @@ export default function Lists({
   initialLists?: List[];
   initialDevices?: Device[];
 }) {
-  const {items: lists, deleteItem, updateItem, createItem} = useLists(
-    initialLists,
-  );
-  const {items: devices} = useDevices(initialDevices);
+  const {deleteItem, updateItem, createItem} = useLists(initialLists);
+  const {data: lists} = useSWR('lists', {
+    initialData: initialLists,
+  });
+  const {data: devices} = useSWR(getAPIUrl('devices'), {
+    initialData: initialDevices,
+  });
   const [modal, contextHolder] = Modal.useModal();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [newListName, setNewListName] = useState<string | null>(null);

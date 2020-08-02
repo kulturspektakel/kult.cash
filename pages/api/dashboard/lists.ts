@@ -4,7 +4,9 @@ import {List} from '@prisma/client';
 import dashboardAuthentication from '../../../utils/dashboardAuthentication';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  await dashboardAuthentication(req, res);
+  if (!(await dashboardAuthentication(req, res))) {
+    return;
+  }
   const list: List | null = JSON.parse(req.body || 'null');
 
   if (list && (req.method === 'POST' || req.method === 'PUT')) {

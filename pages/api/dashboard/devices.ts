@@ -4,7 +4,9 @@ import {DeviceCreateInput} from '@prisma/client';
 import dashboardAuthentication from '../../../utils/dashboardAuthentication';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  await dashboardAuthentication(req, res);
+  if (!(await dashboardAuthentication(req, res))) {
+    return;
+  }
 
   const deviceInput: DeviceCreateInput | null = JSON.parse(req.body || 'null');
   if (deviceInput && (req.method === 'POST' || req.method === 'PUT')) {

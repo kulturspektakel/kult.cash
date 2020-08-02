@@ -2,7 +2,10 @@ import {NextApiRequest, NextApiResponse} from 'next';
 import {parse} from 'cookie';
 import prismaClient from './prismaClient';
 
-export default async function (req: NextApiRequest, res: NextApiResponse) {
+export default async function dashboardAuthentication(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   const cookie = req.headers?.cookie;
   const {token} = parse(cookie || '');
   if (token) {
@@ -12,7 +15,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       },
     });
     if (session && session.expires > new Date()) {
-      return;
+      return true;
     }
     try {
       await prismaClient.session.delete({
@@ -22,6 +25,6 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       });
     } catch (e) {}
   }
-
-  throw res.status(401).send('Unauthorized');
+  res.status(401).send('Unauthorized');
+  return false;
 }

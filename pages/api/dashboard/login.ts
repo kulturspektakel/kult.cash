@@ -37,18 +37,19 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         },
       });
 
-      res.writeHead(301, {
-        Location: '/dashboard',
-        'Set-Cookie': serialize(TOKEN_NAME, token, {
-          maxAge: MAX_AGE,
-          expires,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          path: '/',
-          sameSite: 'lax',
-        }),
-      });
-      return res.end();
+      return res
+        .writeHead(301, {
+          Location: '/dashboard',
+          'Set-Cookie': serialize(TOKEN_NAME, token, {
+            maxAge: MAX_AGE,
+            expires,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            path: '/',
+            sameSite: 'lax',
+          }),
+        })
+        .end();
     }
   }
   return res.status(401).send('Unauthorized');

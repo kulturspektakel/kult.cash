@@ -1,7 +1,7 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import deviceAuthentication from '../../utils/deviceAuthentication';
 import updateLastSeen, {parseDeviceData} from '../../utils/updateLastSeen';
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
 import {postDeviceUpdate} from '../../utils/slack';
 
@@ -13,7 +13,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).send('Bad Request');
   }
   const updateDir = path.join(process.env.PROJECT_DIRNAME!, 'firmware');
-  const updates = await fs.readdir(updateDir);
+  const updates = await fs.promises.readdir(updateDir);
   const newerVersion = updates
     .filter((s) => /\d+\.bin/.test(s))
     .map((s) => parseInt(s, 10))

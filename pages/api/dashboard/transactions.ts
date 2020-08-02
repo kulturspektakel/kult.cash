@@ -3,7 +3,9 @@ import prismaClient from '../../../utils/prismaClient';
 import dashboardAuthentication from '../../../utils/dashboardAuthentication';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  await dashboardAuthentication(req, res);
+  if (!(await dashboardAuthentication(req, res))) {
+    return;
+  }
 
   const transactions = await prismaClient.transactions.findMany({
     include: {

@@ -1,5 +1,5 @@
 import {IncomingMessage} from 'http';
-import {Type, getAPIUrl} from './useData';
+import {Type, getAPIUrl} from '../components/useData';
 import {List} from '@prisma/client';
 import absoluteUrl from 'next-absolute-url';
 
