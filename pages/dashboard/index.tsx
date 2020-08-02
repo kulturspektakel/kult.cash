@@ -10,6 +10,7 @@ import {
   getInitialDevices,
 } from '../../components/getInitialProps';
 import {NextPageContext} from 'next';
+import useSWR from 'swr';
 const {Option} = Select;
 
 const getColumns = memoize((lists: List[] | null, updateDevice) => [
@@ -74,6 +75,8 @@ export default function Devices({
 }) {
   const {items: devices, updateItem: updateDevice} = useDevices(initialDevices);
   const {items: lists} = useLists(initialLists);
+  const {data} = useSWR('/api/dashboard/devices');
+  console.log('data', data);
 
   return (
     <App>

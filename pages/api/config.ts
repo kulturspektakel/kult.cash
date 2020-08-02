@@ -2,7 +2,7 @@ import {crc32} from 'crc';
 import {NextApiRequest, NextApiResponse} from 'next';
 import deviceAuthentication from '../../utils/deviceAuthentication';
 import prismaClient from '../../utils/prismaClient';
-import updateLastSeen, {parseUserAgent} from '../../utils/updateLastSeen';
+import updateLastSeen, {parseDeviceData} from '../../utils/updateLastSeen';
 import {ConfigMessage} from '../../proto/index';
 
 function asciinize(s: string | null): string | null {
@@ -29,7 +29,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await deviceAuthentication(req, res);
   await updateLastSeen(req);
 
-  const {id} = parseUserAgent(req);
+  const {id} = parseDeviceData(req);
   const list = await prismaClient.device
     .findOne({
       where: {

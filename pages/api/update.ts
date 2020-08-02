@@ -1,6 +1,6 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import deviceAuthentication from '../../utils/deviceAuthentication';
-import updateLastSeen, {parseUserAgent} from '../../utils/updateLastSeen';
+import updateLastSeen, {parseDeviceData} from '../../utils/updateLastSeen';
 import fs from 'fs-extra';
 import path from 'path';
 import {postDeviceUpdate} from '../../utils/slack';
@@ -8,7 +8,7 @@ import {postDeviceUpdate} from '../../utils/slack';
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   await deviceAuthentication(req, res);
   await updateLastSeen(req);
-  const {id, version} = parseUserAgent(req);
+  const {id, version} = parseDeviceData(req);
   if (!id || !version) {
     return res.status(400).send('Bad Request');
   }

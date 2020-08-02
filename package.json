@@ -13,7 +13,7 @@
   "dependencies": {
     "@ant-design/charts": "^0.9.6",
     "@ant-design/icons": "^4.1.0",
-    "@prisma/client": "^2.2.0",
+    "@prisma/client": "^2.3.0",
     "@slack/web-api": "^5.8.0",
     "@types/cookie": "^0.4.0",
     "@types/crc": "^3.4.0",
@@ -34,7 +34,7 @@
     "fs-extra": "^9.0.0",
     "lodash.memoize": "^4.1.2",
     "moment": "^2.24.0",
-    "next": "^9.4.5-canary.34",
+    "next": "^9.5.1",
     "next-absolute-url": "^1.2.2",
     "protobufjs": "^6.9.0",
     "rc-resize-observer": "^0.2.1",
@@ -44,11 +44,13 @@
     "react-resize-detector": "^5.0.6",
     "react-window": "^1.8.5",
     "recoil": "^0.0.10",
+    "swr": "^0.3.0",
+    "unfetch": "^4.1.0",
     "uuid": "^8.0.0",
     "zipcelx": "^1.6.2"
   },
   "devDependencies": {
-    "@prisma/cli": "^2.2.0",
+    "@prisma/cli": "^2.3.0",
     "@types/node": "^13.13.2",
     "@types/react": "^16.9.34",
     "commander": "^5.1.0",

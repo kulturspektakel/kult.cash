@@ -27,7 +27,7 @@ type Props = {
   onSave: (list: List) => void;
 };
 
-export default function ({list, onDelete, onSave, devices}: Props) {
+export default function ProductList({list, onDelete, onSave, devices}: Props) {
   const [dirty, setDirty] = useState(false);
   const [emoji, setEmoji] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductT[]>([]);

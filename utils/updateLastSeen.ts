@@ -1,28 +1,23 @@
 import prismaClient from './prismaClient';
 import {NextApiRequest} from 'next';
 
-export function parseUserAgent(
-  req: NextApiRequest,
-): {id: string | undefined; version: number | undefined} {
-  let version = undefined;
-  let id = undefined;
+type DeviceData = {id: string | undefined; version: number | undefined};
 
-  const userAgent = req.headers['user-agent'];
-  if (userAgent) {
-    const userAgentMatcher = /([A-F0-9]{2}:[A-F0-9]{2}:[A-F0-9]{2})\/(\d+)/;
-    const matches = userAgent.match(userAgentMatcher);
-
-    if (matches?.length === 3) {
-      const [_, i, v] = matches;
-      version = parseInt(v, 10);
-      id = i;
-    }
+export function parseDeviceData(req: NextApiRequest): DeviceData {
+  const macAddress = req.headers['x-esp8266-sta-mac'];
+  const version = req.headers['x-esp8266-version'];
+  const result: DeviceData = {id: undefined, version: undefined};
+  if (typeof macAddress === 'string' && macAddress.length === 17) {
+    result.id = macAddress.substr(9);
   }
-  return {id, version};
+  if (typeof version === 'string') {
+    result.version = parseInt(version, 10);
+  }
+  return result;
 }
 
 export default async function (req: NextApiRequest) {
-  const {id, version} = parseUserAgent(req);
+  const {id, version} = parseDeviceData(req);
 
   if (id) {
     const device = {
