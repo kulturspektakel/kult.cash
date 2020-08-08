@@ -1,4 +1,4 @@
-import {useEffect, useCallback, useState} from 'react';
+import {useCallback} from 'react';
 import {
   DeviceUpdateInput,
   DeviceCreateInput,
@@ -10,111 +10,74 @@ import {
   CartItem,
 } from '@prisma/client';
 import {message} from 'antd';
-import {atom, useRecoilState, RecoilState} from 'recoil';
+import {useRecoilState} from 'recoil';
 import {requiresLoginAtom} from './Login';
+import useSWR from 'swr';
 
 export type Type = 'devices' | 'transactions' | 'lists';
 
 export const getAPIUrl = (type: Type) => `/api/dashboard/${type}`;
+export const fetcher = async (type: Type, init?: RequestInit) => {
+  const res = await fetch(getAPIUrl(type), init);
+  if (!res.ok) {
+    throw res;
+  }
+  return await res.json();
+};
 
-const generateHook = <T, U, C>(
-  type: Type,
-  primaryKey: string,
-  atom: RecoilState<T[] | null>,
-) => (initialData?: T[]) => {
-  const url = getAPIUrl(type);
+const generateHook = <T, U, C>(type: Type, primaryKey: string) => (
+  initialData: T[] = [],
+) => {
   const [, setRequiresLogin] = useRecoilState(requiresLoginAtom);
 
-  const [cachedItems, setCachedItems]: [
-    null | T[],
-    (items: T[]) => void,
-  ] = useRecoilState(atom);
-
-  const [items, setItems] = useState(cachedItems ?? initialData ?? null);
-
-  const update = async (res: Response) => {
-    let data: T[] = await res.json();
-    setItems(data);
-    setCachedItems(data);
-    return data;
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (cachedItems) {
-        // do nothing
-      } else if (items) {
-        setCachedItems(items);
+  const {data: items, mutate} = useSWR<T[]>(type, fetcher, {
+    initialData: initialData,
+    onError: (err: Response) => {
+      if (err.status === 401) {
+        setRequiresLogin(true);
       } else {
-        const res = await fetch(url, {
-          method: 'GET',
-        });
-        if (res.status === 401) {
-          setRequiresLogin(true);
-        } else {
-          update(res);
-        }
+        message.error(`Fehler: ${err.status}: ${err.statusText}`);
       }
-    })();
-  }, []);
+    },
+  });
 
-  const deleteItem = useCallback(async (id: string) => {
-    const data = await fetch(url, {
+  const deleteItem = useCallback(async (id: string | string[]) => {
+    const data = await fetcher(type, {
       method: 'DELETE',
       body: JSON.stringify({[primaryKey]: id}),
     });
-    update(data);
+    mutate(data, false);
   }, []);
 
   const updateItem = useCallback(async (item: U) => {
-    const data = await fetch(url, {
+    const data = await fetcher(type, {
       method: 'POST',
       body: JSON.stringify(item),
     });
-    update(data);
-    if (data.status === 200) {
-      message.success('Änderung gespeichert');
-    } else {
-      message.error('Fehler beim Speichern');
-    }
+    mutate(data, false);
+    message.success('Änderung gespeichert');
   }, []);
 
   const createItem = useCallback(async (device: C) => {
-    const data = await fetch(url, {
+    const data = await fetcher(type, {
       method: 'PUT',
       body: JSON.stringify(device),
     });
-    update(data);
+    mutate(data, false);
   }, []);
 
   return {items, deleteItem, updateItem, createItem};
 };
 
-const listsAtom = atom<null | List[]>({
-  key: 'listsCache',
-  default: null,
-});
-
-const devicesAtom = atom<null | Device[]>({
-  key: 'devicesCache',
-  default: null,
-});
-
-const transactionsAtom = atom<null | TransactionData[]>({
-  key: 'transactionsCache',
-  default: null,
-});
-
 export const useDevices = generateHook<
   Device,
   DeviceUpdateInput,
   DeviceCreateInput
->('devices', 'id', devicesAtom);
+>('devices', 'id');
 
 export const useLists = generateHook<List, ListUpdateInput, ListCreateInput>(
   'lists',
   'name',
-  listsAtom,
 );
 
 export type TransactionData = Transactions & {cartItems: CartItem[]};
@@ -123,4 +86,4 @@ export const useTransactions = generateHook<
   TransactionData,
   ListUpdateInput,
   ListCreateInput
->('transactions', 'id', transactionsAtom);
+>('transactions', 'id');

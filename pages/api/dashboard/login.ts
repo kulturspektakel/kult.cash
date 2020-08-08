@@ -15,7 +15,7 @@ export type OAuthSuccess = {
 };
 
 const TOKEN_NAME = 'token';
-const MAX_AGE = 60 * 60 * 8; // 8 hours
+const MAX_AGE = 60 * 60 * 25; // 8 hours
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const {code} = req.query;
@@ -28,6 +28,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const result: OAuthSuccess | {ok: false} = await data.json();
     if (result && result.ok) {
       const expires = new Date(Date.now() + MAX_AGE * 1000);
+      console.log('aaaa', expires);
       const token = uuidv4();
       await prismaClient.session.create({
         data: {

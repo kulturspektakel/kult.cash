@@ -3,13 +3,10 @@ import {Device, List} from '@prisma/client';
 import {Select} from 'antd';
 import memoize from 'lodash.memoize';
 import App from '../../components/App';
-import {fetcher} from '../../utils/swrConfig';
-import {getAPIUrl, useDevices} from '../../components/useData';
+import {useDevices, useLists} from '../../components/useData';
 import RelativeDate from '../../components/RelativeDate';
 import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
 import {NextPageContext} from 'next';
-import useSWR from 'swr';
-import {updateDevice} from '../../utils/mutations';
 const {Option} = Select;
 
 const getColumns = memoize((lists: List[] | null, updateDevice) => [
@@ -72,14 +69,8 @@ export default function Devices({
   initialLists?: List[];
   initialDevices?: Device[];
 }) {
-  // const {updateItem: updateDevice} = useDevices(initialDevices);
-  const {data: lists} = useSWR(getAPIUrl('lists'), fetcher, {
-    initialData: initialLists,
-  });
-  const {data: devices} = useSWR(getAPIUrl('devices'), fetcher, {
-    initialData: initialDevices,
-  });
-
+  const {updateItem: updateDevice, items: devices} = useDevices(initialDevices);
+  const {items: lists} = useLists(initialLists);
   return (
     <App>
       <Table

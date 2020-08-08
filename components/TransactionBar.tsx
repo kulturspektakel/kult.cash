@@ -1,8 +1,8 @@
 import currencyFormatter from '../utils/currencyFormatter';
-import {Button, Drawer, Radio} from 'antd';
+import {Button, Drawer, Radio, Modal} from 'antd';
 import TransactionStats, {GroupBy} from './TransactionStats';
-import {useState, useCallback} from 'react';
-import {FileExcelOutlined} from '@ant-design/icons';
+import {useState, useCallback, useRef} from 'react';
+import {FileExcelOutlined, DeleteOutlined} from '@ant-design/icons';
 import zipcelx from 'zipcelx';
 import {TransactionData} from './useData';
 import {ColumnsType} from 'antd/lib/table';
@@ -12,9 +12,11 @@ export const BAR_HEIGHT = 60;
 export default function TransactionBar(props: {
   data: TransactionData[];
   columns: ColumnsType<TransactionData>;
+  onDelete: () => void;
 }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>(GroupBy.List);
+  const ref = useRef<HTMLDivElement>(null);
 
   const revenue = props.data.reduce(
     (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
@@ -43,8 +45,27 @@ export default function TransactionBar(props: {
   //   });
   // }, [props.data]);
 
+  const onDelete = useCallback(() => {
+    Modal.confirm({
+      title: `${props.data.length} Transaktionen löschen?`,
+      onOk: (...args) => {
+        onDelete();
+      },
+      cancelText: 'Abbrechen',
+      okText: 'Löschen',
+      okButtonProps: {
+        danger: true,
+      },
+    });
+  }, []);
+
   const content = {
-    deviceTime: <>{props.data.length} Transaktionen</>,
+    deviceTime: (
+      <>
+        {props.data.length} Transaktionen{' '}
+        <DeleteOutlined color="red" onClick={onDelete} />
+      </>
+    ),
     card: <>{cards} Karten</>,
     deviceId: <>{devices} Geräte</>,
     total: <>{currencyFormatter.format(revenue / 100)}</>,
@@ -52,7 +73,15 @@ export default function TransactionBar(props: {
 
   return (
     <>
-      <div className={styles.bar} onClick={() => setDrawerVisible(true)}>
+      <div
+        ref={ref}
+        className={styles.bar}
+        onClick={(e: React.MouseEvent<HTMLElement>) => {
+          if (e.target === ref.current || e.target.parentNode === ref.current) {
+            setDrawerVisible(true);
+          }
+        }}
+      >
         {props.columns.map((col) => (
           <div key={col.key} style={{width: col.width}}>
             {content[col.key as keyof typeof content]}

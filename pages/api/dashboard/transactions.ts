@@ -7,6 +7,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
+  const idsToDelete: string[] = JSON.parse(req.body || '[]');
+  if (req.method === 'DELETE' && idsToDelete.length > 0) {
+    await prismaClient.transactions.deleteMany({
+      where: {
+        id: {
+          in: idsToDelete,
+        },
+      },
+    });
+  }
+
   const transactions = await prismaClient.transactions.findMany({
     include: {
       cartItems: {

@@ -5,8 +5,7 @@ import {ListUpdateInput, List, Device} from '@prisma/client';
 import {useState, useCallback} from 'react';
 import {NextPageContext} from 'next';
 import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
-import useSWR from 'swr';
-import {getAPIUrl, useLists} from '../../components/useData';
+import {useLists, useDevices} from '../../components/useData';
 
 export default function Lists({
   initialLists,
@@ -16,12 +15,8 @@ export default function Lists({
   initialDevices?: Device[];
 }) {
   const {deleteItem, updateItem, createItem} = useLists(initialLists);
-  const {data: lists} = useSWR('lists', {
-    initialData: initialLists,
-  });
-  const {data: devices} = useSWR(getAPIUrl('devices'), {
-    initialData: initialDevices,
-  });
+  const {items: lists} = useLists(initialLists);
+  const {items: devices} = useDevices(initialDevices);
   const [modal, contextHolder] = Modal.useModal();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [newListName, setNewListName] = useState<string | null>(null);

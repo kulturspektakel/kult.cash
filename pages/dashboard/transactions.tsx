@@ -1,7 +1,11 @@
 import App from '../../components/App';
-import {useDevices, TransactionData, getAPIUrl} from '../../components/useData';
+import {
+  useDevices,
+  TransactionData,
+  useTransactions,
+} from '../../components/useData';
 import {Transactions, Device, List} from '@prisma/client';
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
@@ -135,19 +139,9 @@ const getColums = (
   },
 ];
 
-function useFilteredTransactions(initialTransactions?: TransactionData[]) {
-  const router = useRouter();
-  const isBonbude = Boolean(router.query.bonbude);
-  useEffect(() => {}, []);
-  const {data: items} = useSWR(getAPIUrl('transactions'), {
-    initialData: initialTransactions,
-  });
-  const filteredTransactions = useMemo(
-    () => items?.filter((t) => filterBonbude(t) === isBonbude),
-    [items, isBonbude],
-  );
-  return filteredTransactions;
-}
+// function useFilteredTransactions(initialTransactions?: TransactionData[]) {
+//   return filteredTransactions;
+// }
 
 export default function TransactionsPage({
   initialDevices,
@@ -156,10 +150,16 @@ export default function TransactionsPage({
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
 }) {
-  const transactions = useFilteredTransactions(initialTransactions);
-  const {data: devices} = useSWR(getAPIUrl('devices'), {
-    initialData: initialDevices,
-  });
+  const router = useRouter();
+  const isBonbude = Boolean(router.query.bonbude);
+  const {items: items, deleteItem: deleteTransactions} = useTransactions(
+    initialTransactions,
+  );
+  const transactions = useMemo(
+    () => items?.filter((t) => filterBonbude(t) === isBonbude),
+    [items, isBonbude],
+  );
+  const {items: devices} = useDevices(initialDevices);
   const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<TransactionData[] | null>(null);
   const cardFilter = useState<string | null>(null);
@@ -171,6 +171,14 @@ export default function TransactionsPage({
     transactions,
     currentDataSource,
   ]);
+
+  const onDelete = useCallback(() => {
+    console.log('-----');
+    const ids = transactions?.map((t) => t.id);
+    if (ids) {
+      deleteTransactions(ids);
+    }
+  }, [transactions]);
 
   const lists =
     transactions?.reduce<Set<string>>((acc, cv) => {
@@ -202,7 +210,9 @@ export default function TransactionsPage({
           />
         )}
       </div>
-      {data && <TransactionBar data={data} columns={columns} />}
+      {data && (
+        <TransactionBar data={data} columns={columns} onDelete={onDelete} />
+      )}
     </App>
   );
 }
