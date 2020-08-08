@@ -19,7 +19,9 @@ const generateGetInitialData = <T,>(api: Type) => async (
           cookie: req.headers.cookie,
         },
       });
-      transactions = await res.json();
+      if (res.ok) {
+        transactions = await res.json();
+      }
     } catch (e) {
       console.error(e);
     }
@@ -29,6 +31,9 @@ const generateGetInitialData = <T,>(api: Type) => async (
 
 export const getInitialLists = generateGetInitialData<List>('lists');
 export const getInitialDevices = generateGetInitialData<List>('devices');
-export const getInitialTransactions = generateGetInitialData<List>(
-  'transactions',
+export const getInitialTransactionsVirtual = generateGetInitialData<List>(
+  'transactions/virtual',
+);
+export const getInitialTransactionsReal = generateGetInitialData<List>(
+  'transactions/real',
 );

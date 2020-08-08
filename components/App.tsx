@@ -8,8 +8,8 @@ import Login from './Login';
 const ROUTES = {
   '/dashboard': 'Geräte',
   '/dashboard/lists': 'Preislisten',
-  '/dashboard/transactions': 'Buden',
-  '/dashboard/transactions?bonbude=1': 'Bonbuden',
+  '/dashboard/transactions/virtual': 'Buden',
+  '/dashboard/transactions/real': 'Bonbuden',
 };
 
 export default function App({

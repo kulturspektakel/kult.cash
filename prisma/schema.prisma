@@ -5,6 +5,7 @@ datasource sqlite {
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["transactionApi"]
 }
 
 model Device {

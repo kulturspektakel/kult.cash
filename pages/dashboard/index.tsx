@@ -9,7 +9,7 @@ import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
 import {NextPageContext} from 'next';
 const {Option} = Select;
 
-const getColumns = memoize((lists: List[] | null, updateDevice) => [
+const getColumns = memoize((lists: List[] | undefined, updateDevice) => [
   {
     title: 'ID',
     dataIndex: 'id',
