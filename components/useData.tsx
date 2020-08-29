@@ -10,8 +10,6 @@ import {
   CartItem,
 } from '@prisma/client';
 import {message} from 'antd';
-import {useRecoilState} from 'recoil';
-import {requiresLoginAtom} from './Login';
 import useSWR from 'swr';
 
 export type Type =
@@ -37,13 +35,11 @@ export const fetcher = async (type: Type, init?: RequestInit) => {
 const generateHook = <T, U, C>(type: Type, primaryKey: string) => (
   initialData: T[] = [],
 ) => {
-  const [, setRequiresLogin] = useRecoilState(requiresLoginAtom);
-
-  const {data: items, mutate} = useSWR<T[]>(type, fetcher, {
+  const {data: items = [], mutate} = useSWR<T[]>(type, fetcher, {
     initialData: initialData,
     onError: (err: Response) => {
       if (err.status === 401) {
-        setRequiresLogin(true);
+        // setRequiresLogin(true);
       } else {
         message.error(`Fehler: ${err.status}: ${err.statusText}`);
       }

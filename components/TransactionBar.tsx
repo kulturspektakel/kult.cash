@@ -78,6 +78,7 @@ export default function TransactionBar({
         ref={ref}
         className={styles.bar}
         onClick={(e: React.MouseEvent<HTMLElement>) => {
+          // @ts-ignore
           if (e.target === ref.current || e.target.parentNode === ref.current) {
             setDrawerVisible(true);
           }
