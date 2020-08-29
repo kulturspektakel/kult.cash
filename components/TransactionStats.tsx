@@ -276,7 +276,7 @@ function RevenueOverTime(props: {data: TransactionData[]; groupBy: GroupBy}) {
     type: string;
   }> = [];
   for (let i = min; i <= max; i++) {
-    for (let group of groups) {
+    for (const group of groups) {
       data.push({
         hour: moment(i * timeGroup).format('dd HH:00'),
         revenue: (hours.get(i)?.get(group)?.revenue ?? 0) / 100,

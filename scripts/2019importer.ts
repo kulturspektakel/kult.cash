@@ -16,20 +16,23 @@ let lastTransactionDate = new Date('2019-07-19 15:00:00+2');
 let deviceID = '00:00:00';
 
 (async () => {
+  let imports = 0;
   if (fs.existsSync(program.input)) {
     const lines = fs.readFileSync(program.input).toString().split('\n');
 
-    for (let line of lines) {
-      await parseLine(line);
+    for (const line of lines) {
+      if (await parseLine(line)) {
+        imports++;
+      }
     }
   } else {
     console.error(`File ${program.input} does not exist.`);
   }
-  console.log('Done.');
+  console.log(`✅ Done importing ${imports} logs!`);
   process.exit(0);
 })();
 
-async function parseLine(line: string) {
+async function parseLine(line: string): Promise<boolean> {
   const [
     timeOffsetS,
     card,
@@ -42,18 +45,18 @@ async function parseLine(line: string) {
   ] = line.trim().split(',');
 
   if (!timeOffsetS) {
-    return;
+    return false;
   }
 
   const timeOffset = parseInt(timeOffsetS, 10);
   const mode = parseMode(modeS);
 
   if (mode === null) {
-    return;
+    return false;
   } else if (mode === TransactionMessage.Mode.TIME_ENTRY) {
     deviceID = tokensBefore;
     timeBase = parseDate(balanceBefore).getTime() - timeOffset;
-    return;
+    return false;
   }
 
   const cart = parseCart(cartS);
@@ -107,6 +110,7 @@ async function parseLine(line: string) {
     },
   });
   console.log(`Imported ${transaction.id}`);
+  return true;
 }
 
 function parseCart(

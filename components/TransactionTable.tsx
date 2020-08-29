@@ -1,29 +1,17 @@
-import App from '../../components/App';
-import {
-  useDevices,
-  TransactionData,
-  useTransactions,
-} from '../../components/useData';
-import {Transactions, Device, List} from '@prisma/client';
+import {useDevices, TransactionData, useTransactions} from './useData';
+import {Transactions, Device} from '@prisma/client';
 import React, {useState, useEffect, useMemo, useCallback} from 'react';
-import TransactionBar from '../../components/TransactionBar';
-import currencyFormatter from '../../utils/currencyFormatter';
-import RelativeDate from '../../components/RelativeDate';
-import TimeFilter, {DateRange} from '../../components/TimeFilter';
-import VirtualTable from '../../components/VirtualTable';
-import {Spin, Tooltip, Button} from 'antd';
+import TransactionBar from './TransactionBar';
+import currencyFormatter from '../utils/currencyFormatter';
+import TimeFilter from './TimeFilter';
+import VirtualTable from './VirtualTable';
+import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
-import {NextPageContext} from 'next';
-import {
-  getInitialDevices,
-  getInitialTransactions,
-} from '../../utils/initialProps';
-import {revenueFromTransaction, filterBonbude} from '../../utils/transaction';
+import {revenueFromTransaction, filterBonbude} from '../utils/transaction';
 import {ShoppingCartOutlined} from '@ant-design/icons';
 import {useRouter} from 'next/router';
-import styles from './transactions.module.css';
+import styles from './TransactionTable.module.css';
 import moment from 'antd/node_modules/moment';
-import useSWR from 'swr';
 
 const getColums = (
   devices: Device[] | undefined,
@@ -41,6 +29,7 @@ const getColums = (
     render: (date) => moment(date).format('dd. DD.MM.YYYY HH:mm'),
     sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
     filterDropdown: TimeFilter,
+    defaultSortOrder: 'descend',
     onFilter: (value) => {
       // console.log(value, timeFrom, timeUntil);
       // return timeFrom >= value && value <= timeUntil;
@@ -138,7 +127,7 @@ const getColums = (
 //   return filteredTransactions;
 // }
 
-export default function TransactionsPage({
+export default function TransactionTable({
   initialDevices,
   initialTransactions,
 }: {
@@ -167,12 +156,11 @@ export default function TransactionsPage({
   ]);
 
   const onDelete = useCallback(() => {
-    console.log('-----');
     const ids = transactions?.map((t) => t.id);
     if (ids) {
       deleteTransactions(ids);
     }
-  }, [transactions]);
+  }, [transactions, deleteTransactions]);
 
   const lists =
     transactions?.reduce<Set<string>>((acc, cv) => {
@@ -185,7 +173,7 @@ export default function TransactionsPage({
   const columns = getColums(devices, lists, cardFilter);
 
   return (
-    <App>
+    <>
       <div className={styles.transactionsTableContainer}>
         {!transactions ? (
           <Spin size="large" style={{marginTop: 100}} />
@@ -207,14 +195,6 @@ export default function TransactionsPage({
       {data && (
         <TransactionBar data={data} columns={columns} onDelete={onDelete} />
       )}
-    </App>
+    </>
   );
 }
-
-TransactionsPage.getInitialProps = async ({req}: NextPageContext) => {
-  const [initialDevices, initialTransactions] = await Promise.all([
-    getInitialDevices(req),
-    getInitialTransactions(req),
-  ]);
-  return {initialDevices, initialTransactions};
-};

@@ -9,7 +9,11 @@ import {ColumnsType} from 'antd/lib/table';
 import styles from './TransactionBar.module.css';
 
 export const BAR_HEIGHT = 60;
-export default function TransactionBar(props: {
+export default function TransactionBar({
+  data,
+  columns,
+  onDelete,
+}: {
   data: TransactionData[];
   columns: ColumnsType<TransactionData>;
   onDelete: () => void;
@@ -18,18 +22,15 @@ export default function TransactionBar(props: {
   const [groupBy, setGroupBy] = useState<GroupBy>(GroupBy.List);
   const ref = useRef<HTMLDivElement>(null);
 
-  const revenue = props.data.reduce(
+  const revenue = data.reduce(
     (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
     0,
   );
 
-  const devices = props.data.reduce(
-    (acc, cv) => acc.add(cv.deviceId),
-    new Set(),
-  ).size;
-
-  const cards = props.data.reduce((acc, cv) => acc.add(cv.card), new Set())
+  const devices = data.reduce((acc, cv) => acc.add(cv.deviceId), new Set())
     .size;
+
+  const cards = data.reduce((acc, cv) => acc.add(cv.card), new Set()).size;
 
   // const onDownload = useCallback(() => {
   //   zipcelx({
@@ -45,9 +46,9 @@ export default function TransactionBar(props: {
   //   });
   // }, [props.data]);
 
-  const onDelete = useCallback(() => {
+  const onDeleteClick = useCallback(() => {
     Modal.confirm({
-      title: `${props.data.length} Transaktionen löschen?`,
+      title: `${data.length} Transaktionen löschen?`,
       onOk: (...args) => {
         onDelete();
       },
@@ -57,13 +58,15 @@ export default function TransactionBar(props: {
         danger: true,
       },
     });
-  }, []);
+  }, [onDelete, data.length]);
 
   const content = {
     deviceTime: (
       <>
-        {props.data.length} Transaktionen{' '}
-        <DeleteOutlined color="red" onClick={onDelete} />
+        {data.length} Transaktionen{' '}
+        {data.length > 0 && (
+          <DeleteOutlined color="red" onClick={onDeleteClick} />
+        )}
       </>
     ),
     card: <>{cards} Karten</>,
@@ -83,7 +86,7 @@ export default function TransactionBar(props: {
           }
         }}
       >
-        {props.columns.map((col) => (
+        {columns.map((col) => (
           <div key={col.key} style={{width: col.width}}>
             {content[col.key as keyof typeof content]}
           </div>
@@ -118,7 +121,7 @@ export default function TransactionBar(props: {
         }
         height="70%"
       >
-        <TransactionStats data={props.data} groupBy={groupBy} />
+        <TransactionStats data={data} groupBy={groupBy} />
       </Drawer>
     </>
   );
