@@ -1,6 +1,7 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import prismaClient from '../../../../utils/prismaClient';
 import dashboardAuthentication from '../../../../utils/dashboardAuthentication';
+import {TransactionType} from '../../../../components/useData';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (!(await dashboardAuthentication(req, res))) {
@@ -46,7 +47,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       },
     },
     where:
-      req.query.type === 'real'
+      req.query.type === TransactionType.Real
         ? realTransaction
         : {
             NOT: realTransaction,

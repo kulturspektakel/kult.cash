@@ -28,7 +28,7 @@ export default function App({
         <Menu
           theme="dark"
           mode="horizontal"
-          defaultSelectedKeys={[router.route]}
+          defaultSelectedKeys={[router.asPath]}
         >
           {Object.entries(ROUTES).map(([route, title]) => (
             <Menu.Item key={route}>

@@ -19,7 +19,11 @@ export type Type =
   | 'transactions/virtual'
   | 'transactions/real'
   | 'lists';
-export type TransactionType = 'virtual' | 'real';
+
+export enum TransactionType {
+  Virtual = 'virtual',
+  Real = 'real',
+}
 
 export const getAPIUrl = (type: Type) => `/api/dashboard/${type}`;
 export const fetcher = async (type: Type, init?: RequestInit) => {

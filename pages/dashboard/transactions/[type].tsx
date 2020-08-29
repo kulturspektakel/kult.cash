@@ -13,6 +13,7 @@ import TransactionTable from '../../../components/TransactionTable';
 export default function TransactionsPage(props: {
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
+  transactionType: TransactionType;
 }) {
   return (
     <App>
@@ -22,12 +23,12 @@ export default function TransactionsPage(props: {
 }
 
 TransactionsPage.getInitialProps = async ({req, query}: NextPageContext) => {
-  const transactionType: TransactionType = query.type;
+  const transactionType = query.type;
   const [initialDevices, initialTransactions] = await Promise.all([
     getInitialDevices(req),
-    transactionType === 'real'
+    transactionType === TransactionType.Real
       ? getInitialTransactionsReal(req)
       : getInitialTransactionsVirtual(req),
   ]);
-  return {initialDevices, initialTransactions};
+  return {initialDevices, initialTransactions, transactionType: query.type};
 };

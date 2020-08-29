@@ -1,27 +1,27 @@
-import {useDevices, TransactionData, useTransactions} from './useData';
+import {
+  useDevices,
+  TransactionData,
+  useTransactions,
+  TransactionType,
+} from './useData';
 import {Transactions, Device} from '@prisma/client';
-import React, {useState, useEffect, useMemo, useCallback} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import TransactionBar from './TransactionBar';
 import currencyFormatter from '../utils/currencyFormatter';
-import TimeFilter, {dateRangeFilterAtom, DateRange} from './TimeFilter';
+import TimeFilter from './TimeFilter';
 import VirtualTable from './VirtualTable';
-import {Spin, Tooltip, Button} from 'antd';
+import {Spin, Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
-import {useRecoilState} from 'recoil';
-import {revenueFromTransaction, filterBonbude} from '../utils/transaction';
+import {revenueFromTransaction} from '../utils/transaction';
 import {ShoppingCartOutlined} from '@ant-design/icons';
-import {useRouter} from 'next/router';
 import styles from './TransactionTable.module.css';
 import moment from 'antd/node_modules/moment';
+import CardFilter from './CardFilter';
 
 const getColums = (
   devices: Device[] | undefined,
   lists: Set<string>,
-  dateRange: DateRange,
-  [cardFilter, setCardFilter]: [
-    string | null,
-    React.Dispatch<React.SetStateAction<string | null>>,
-  ],
+  cardFilter: ControlledFilter<string>,
 ): ColumnsType<TransactionData> => [
   {
     title: 'Zeit',
@@ -32,9 +32,12 @@ const getColums = (
     sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
     filterDropdown: TimeFilter,
     defaultSortOrder: 'descend',
-    onFilter: (value) => {
-      // console.log(value, timeFrom, timeUntil);
-      // return timeFrom >= value && value <= timeUntil;
+    onFilter: (value, t) => {
+      if (value) {
+        return (
+          value[0].isBefore(t.deviceTime) && value[1].isAfter(t.deviceTime)
+        );
+      }
       return true;
     },
   },
@@ -43,15 +46,22 @@ const getColums = (
     dataIndex: 'card',
     key: 'card',
     width: '15%',
-    filterDropdown: () => setCardFilter(null),
-    // filteredValue: [cardFilter[0]],
-    // filters: cardFilter[0] ? [cardFilter[0]] : undefined,
+    filterMultiple: false,
+    filtered: cardFilter.isFiltered,
+    filteredValue: [...cardFilter.values],
+    filterDropdown: CardFilter(cardFilter),
     render: (cardID) => (
-      <a onClick={() => setCardFilter(cardID)} className={styles.cardCell}>
+      <a
+        onClick={() => cardFilter.addFilter(cardID)}
+        className={styles.cardCell}
+      >
         {cardID}
       </a>
     ),
-    onFilter: (value) => cardFilter === null || cardFilter === value,
+    onFilter: (value, t) => {
+      console.log('value', value instanceof Set);
+      return String(value).indexOf(t.card) > -1;
+    },
   },
   {
     title: 'Gerät',
@@ -95,7 +105,7 @@ const getColums = (
                 </div>
               ))}
             >
-              <ShoppingCartOutlined color="#4591F7" />
+              <ShoppingCartOutlined />
             </Tooltip>
           )}
         </div>
@@ -129,34 +139,50 @@ const getColums = (
 //   return filteredTransactions;
 // }
 
+export type ControlledFilter<T> = {
+  onClear: () => void;
+  addFilter: (value: T) => void;
+  values: Set<T>;
+  isFiltered: boolean;
+  options: Set<T>;
+};
+
+function useControlledFilter<T>(options?: Set<T>): ControlledFilter<T> {
+  // const [values, setValues] = useState<T[]>([]);
+  const {current: values} = useRef(new Set<T>());
+
+  return {
+    onClear: values.clear,
+    addFilter: values.add,
+    values,
+    isFiltered: values.size > 0,
+    options: options ?? new Set(),
+  };
+}
+
 export default function TransactionTable({
   initialDevices,
   initialTransactions,
 }: {
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
+  transactionType: TransactionType;
 }) {
-  const router = useRouter();
-  const isBonbude = Boolean(router.query.bonbude);
-  const {items: items, deleteItem: deleteTransactions} = useTransactions(
+  const {items: devices} = useDevices(initialDevices);
+  const {items: transactions, deleteItem: deleteTransactions} = useTransactions(
     initialTransactions,
   );
-  const transactions = useMemo(
-    () => items?.filter((t) => filterBonbude(t) === isBonbude),
-    [items, isBonbude],
+  const cardFilter = useControlledFilter<string | null>(
+    new Set(transactions?.map((t) => t.card)),
   );
-  const {items: devices} = useDevices(initialDevices);
-  const [timeRange] = useRecoilState(dateRangeFilterAtom);
-  const [data, setData] = useState<TransactionData[] | null>(null);
-  const cardFilter = useState<string | null>(null);
-  const [currentDataSource, setCurrentDataSource] = useState<
-    TransactionData[] | null
-  >(null);
+  const [currentDataSource, setCurrentDataSource] = useState<TransactionData[]>(
+    transactions || [],
+  );
 
-  useEffect(() => setData(currentDataSource || transactions || []), [
-    transactions,
-    currentDataSource,
-  ]);
+  const onChange = useCallback((_, filters, ___, {currentDataSource}) => {
+    console.log(filters);
+    setCurrentDataSource(currentDataSource);
+  }, []);
 
   const onDelete = useCallback(() => {
     const ids = transactions?.map((t) => t.id);
@@ -173,7 +199,7 @@ export default function TransactionTable({
       return acc;
     }, new Set()) ?? new Set();
 
-  const columns = getColums(devices, lists, timeRange, cardFilter);
+  const columns = getColums(devices, lists, cardFilter);
 
   return (
     <>
@@ -185,18 +211,20 @@ export default function TransactionTable({
             bordered
             size="small"
             columns={columns}
-            dataSource={transactions}
+            dataSource={currentDataSource}
             pagination={false}
             showSorterTooltip={false}
             rowKey="id"
-            onChange={(_, __, ___, {currentDataSource}) =>
-              setCurrentDataSource(currentDataSource)
-            }
+            onChange={onChange}
           />
         )}
       </div>
-      {data && (
-        <TransactionBar data={data} columns={columns} onDelete={onDelete} />
+      {currentDataSource && (
+        <TransactionBar
+          data={currentDataSource}
+          columns={columns}
+          onDelete={onDelete}
+        />
       )}
     </>
   );

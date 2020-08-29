@@ -1,40 +1,26 @@
 import {FilterDropdownProps} from 'antd/lib/table/interface';
 import {Button, DatePicker, Space} from 'antd';
-import {useCallback} from 'react';
+import {useCallback, useState} from 'react';
 import styles from './TimeFilter.module.css';
-import moment, {Moment} from 'moment';
-import {useRecoilState, atom} from 'recoil';
-const {RangePicker} = DatePicker;
-export type DateRange = [Moment | null, Moment | null];
+import {Moment} from 'moment';
 
-export const dateRangeFilterAtom = atom<DateRange>({
-  key: 'dateRangeFilter',
-  default: [null, null],
-});
+const {RangePicker} = DatePicker;
+type DateRange = [Moment | null, Moment | null];
 
 export default function TimeFilter({
   clearFilters,
   confirm,
   setSelectedKeys,
-  selectedKeys: [timeFrom, timeUntil],
+  selectedKeys,
 }: FilterDropdownProps) {
-  const [_dateRangeFilter, setDateRangeFilter] = useRecoilState(
-    dateRangeFilterAtom,
-  );
-
+  const value: DateRange | undefined = selectedKeys[0];
+  const [local, setLocal] = useState<DateRange | undefined>(value);
   const onDone = useCallback(() => {
-    setDateRangeFilter([moment(timeFrom), moment(timeUntil)]);
+    if (local) {
+      setSelectedKeys([local]);
+    }
     confirm();
-  }, [setDateRangeFilter, confirm, timeFrom, timeUntil]);
-
-  const onChange = useCallback(
-    ([a, b]: DateRange) => {
-      const from = a ? a.unix() * 1000 : null;
-      const to = b ? b.unix() * 1000 : null;
-      // setSelectedKeys([from, to]);
-    },
-    [setSelectedKeys],
-  );
+  }, [confirm, setSelectedKeys, local]);
 
   return (
     <div className={styles.root}>
@@ -43,12 +29,8 @@ export default function TimeFilter({
         showTime={{format: 'HH:mm'}}
         format="DD.MM.YYYY HH:mm"
         placeholder={['von', 'bis']}
-        // onChange={onChange}
-        // value={
-        //   timeFrom
-        //     ? ([moment(timeFrom), moment(timeUntil)] as const)
-        //     : undefined
-        // }
+        onChange={setLocal}
+        value={value}
       />
       <Space className={styles.buttons}>
         <Button size="small" type="ghost" onClick={clearFilters}>

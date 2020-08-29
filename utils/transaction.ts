@@ -9,7 +9,3 @@ export function revenueFromTransaction(transaction: TransactionData): number {
     (transaction.tokensAfter - transaction.tokensBefore) * TOKEN_VALUE
   );
 }
-
-export function filterBonbude(transaction: TransactionData): boolean {
-  return (transaction.listName || '').indexOf('Bon') > -1;
-}

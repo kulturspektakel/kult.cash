@@ -49,9 +49,7 @@ export default function TransactionBar({
   const onDeleteClick = useCallback(() => {
     Modal.confirm({
       title: `${data.length} Transaktionen löschen?`,
-      onOk: (...args) => {
-        onDelete();
-      },
+      onOk: onDelete,
       cancelText: 'Abbrechen',
       okText: 'Löschen',
       okButtonProps: {
@@ -86,7 +84,7 @@ export default function TransactionBar({
         }}
       >
         {columns.map((col) => (
-          <div key={col.key} style={{width: col.width}}>
+          <div key={col.key} style={{width: col.width, textAlign: col.align}}>
             {content[col.key as keyof typeof content]}
           </div>
         ))}
