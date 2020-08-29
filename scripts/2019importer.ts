@@ -103,7 +103,7 @@ async function parseLine(line: string) {
         ? {
             create: cart,
           }
-        : null,
+        : undefined,
     },
   });
   console.log(`Imported ${transaction.id}`);

@@ -9,14 +9,10 @@ import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import TransactionBar from '../../components/TransactionBar';
 import currencyFormatter from '../../utils/currencyFormatter';
 import RelativeDate from '../../components/RelativeDate';
-import TimeFilter, {
-  dateRangeFilterAtom,
-  DateRange,
-} from '../../components/TimeFilter';
+import TimeFilter, {DateRange} from '../../components/TimeFilter';
 import VirtualTable from '../../components/VirtualTable';
 import {Spin, Tooltip, Button} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
-import {useRecoilState} from 'recoil';
 import {NextPageContext} from 'next';
 import {
   getInitialDevices,
@@ -32,7 +28,6 @@ import useSWR from 'swr';
 const getColums = (
   devices: Device[] | undefined,
   lists: Set<string>,
-  dateRange: DateRange,
   [cardFilter, setCardFilter]: [
     string | null,
     React.Dispatch<React.SetStateAction<string | null>>,
@@ -160,7 +155,6 @@ export default function TransactionsPage({
     [items, isBonbude],
   );
   const {items: devices} = useDevices(initialDevices);
-  const [timeRange] = useRecoilState(dateRangeFilterAtom);
   const [data, setData] = useState<TransactionData[] | null>(null);
   const cardFilter = useState<string | null>(null);
   const [currentDataSource, setCurrentDataSource] = useState<
@@ -188,7 +182,7 @@ export default function TransactionsPage({
       return acc;
     }, new Set()) ?? new Set();
 
-  const columns = getColums(devices, lists, timeRange, cardFilter);
+  const columns = getColums(devices, lists, cardFilter);
 
   return (
     <App>

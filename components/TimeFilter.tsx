@@ -3,14 +3,8 @@ import {Button, DatePicker, Space} from 'antd';
 import {useCallback} from 'react';
 import styles from './TimeFilter.module.css';
 import moment, {Moment} from 'moment';
-import {useRecoilState, atom} from 'recoil';
 const {RangePicker} = DatePicker;
 export type DateRange = [Moment | null, Moment | null];
-
-export const dateRangeFilterAtom = atom<DateRange>({
-  key: 'dateRangeFilter',
-  default: [null, null],
-});
 
 export default function TimeFilter({
   clearFilters,
@@ -18,14 +12,14 @@ export default function TimeFilter({
   setSelectedKeys,
   selectedKeys: [timeFrom, timeUntil],
 }: FilterDropdownProps) {
-  const [_dateRangeFilter, setDateRangeFilter] = useRecoilState(
-    dateRangeFilterAtom,
-  );
+  // const [_dateRangeFilter, setDateRangeFilter] = useRecoilState(
+  //   dateRangeFilterAtom,
+  // );
 
   const onDone = useCallback(() => {
-    setDateRangeFilter([moment(timeFrom), moment(timeUntil)]);
+    // setDateRangeFilter([moment(timeFrom), moment(timeUntil)]);
     confirm();
-  }, [setDateRangeFilter, confirm, timeFrom, timeUntil]);
+  }, [confirm, timeFrom, timeUntil]);
 
   const onChange = useCallback(
     ([a, b]: DateRange) => {

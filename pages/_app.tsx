@@ -2,14 +2,14 @@ import 'antd/dist/antd.css';
 import 'emoji-mart/css/emoji-mart.css';
 import {AppProps} from 'next/app';
 import moment from 'moment';
-import {RecoilRoot} from 'recoil';
+import {Provider} from 'next-auth/client';
 
 moment.locale('de');
 function MyApp({Component, pageProps}: AppProps) {
   return (
-    <RecoilRoot>
+    <Provider session={pageProps.session}>
       <Component {...pageProps} />
-    </RecoilRoot>
+    </Provider>
   );
 }
 

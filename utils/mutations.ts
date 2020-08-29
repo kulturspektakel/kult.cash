@@ -1,7 +1,7 @@
 import {getAPIUrl} from '../components/useData';
 import {mutate} from 'swr';
 
-export const updateDevice = async <T>(item: T) => {
+export const updateDevice = async <T extends {id: string}>(item: T) => {
   const key = getAPIUrl('devices');
   mutate(key);
   const data = await fetch(key, {
