@@ -10,6 +10,7 @@ const ROUTES = {
   '/dashboard/lists': 'Preislisten',
   '/dashboard/transactions/virtual': 'Buden',
   '/dashboard/transactions/real': 'Bonbuden',
+  '/dashboard/cards': 'Karten',
 };
 
 export default function App({

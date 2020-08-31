@@ -10,21 +10,11 @@ export default function CardFilter({
   selectedKeys,
   cards,
 }: FilterDropdownProps & {cards: Set<string>}) {
-  console.log({
-    confirm,
-    clearFilters,
-    setSelectedKeys,
-    filters,
-    selectedKeys,
-    cards,
-  });
   const options = [...cards].map((o) => (
     <Select.Option value={o} key={o}>
       {o}
     </Select.Option>
   ));
-
-  console.log('filters', filters);
 
   return (
     <div style={{width: 300}}>
