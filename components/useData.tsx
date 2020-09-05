@@ -94,7 +94,14 @@ export const useLists = generateHook<List, ListUpdateInput, ListCreateInput>(
   'name',
 );
 
-export type TransactionData = Transactions & {cartItems: CartItem[]};
+export type TransactionData = Omit<
+  Omit<Transactions, 'deviceTime'>,
+  'createdAt'
+> & {
+  cartItems: CartItem[];
+  deviceTime: string;
+  createdAt: string;
+};
 
 export const useTransactions = generateHook<
   TransactionData,

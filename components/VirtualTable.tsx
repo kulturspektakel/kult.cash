@@ -111,7 +111,12 @@ const Cell = <RecordType extends object>(
   // @ts-ignore
   const value = rawData[rowIndex][col.dataIndex];
   return (
-    <div className={styles.cell} style={style}>
+    <div
+      className={`${styles.cell} ${
+        col.align === 'right' ? styles.alignRight : ''
+      }`}
+      style={style}
+    >
       {col.render ? col.render!(value, rawData[rowIndex], rowIndex) : value}
     </div>
   );

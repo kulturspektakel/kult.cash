@@ -50,7 +50,7 @@ const getColums = memoize(
         title: 'Zeit',
         dataIndex: 'deviceTime',
         key: 'deviceTime',
-        width: '15%',
+        width: '18%',
         render: (date) => moment(date).format('dd. DD.MM.YYYY HH:mm'),
         sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
         filterDropdown: TimeFilter,
@@ -68,7 +68,7 @@ const getColums = memoize(
         title: 'Karte',
         dataIndex: 'card',
         key: 'card',
-        width: '15%',
+        width: '12%',
         defaultFilteredValue: defaultFilteredValue?.card,
         filterDropdown: (filterProps) => {
           cardFilter = filterProps;

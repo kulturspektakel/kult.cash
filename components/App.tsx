@@ -21,6 +21,16 @@ const titles: Record<Route, string> = {
   [Route.Cards]: 'Karten',
 };
 
+const href = (route: Route): string => {
+  switch (route) {
+    case Route.Real:
+    case Route.Virtual:
+      return '/dashboard/transactions/[type]';
+    default:
+      return route;
+  }
+};
+
 export default function App({
   children,
 }: {
@@ -41,8 +51,8 @@ export default function App({
         >
           {Object.values(Route).map((route) => (
             <Menu.Item key={route}>
-              <Link href={route}>
-                <a href={route}>{titles[route]}</a>
+              <Link href={href(route)} as={route}>
+                <a>{titles[route]}</a>
               </Link>
             </Menu.Item>
           ))}
