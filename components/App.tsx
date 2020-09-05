@@ -5,12 +5,20 @@ const {Header, Content} = Layout;
 import styles from './App.module.css';
 import Login from './Login';
 
-const ROUTES = {
-  '/dashboard': 'Geräte',
-  '/dashboard/lists': 'Preislisten',
-  '/dashboard/transactions/virtual': 'Buden',
-  '/dashboard/transactions/real': 'Bonbuden',
-  '/dashboard/cards': 'Karten',
+export enum Route {
+  Home = '/dashboard',
+  Lists = '/dashboard/lists',
+  Virtual = '/dashboard/transactions/virtual',
+  Real = '/dashboard/transactions/real',
+  Cards = '/dashboard/cards',
+}
+
+const titles: Record<Route, string> = {
+  [Route.Home]: 'Geräte',
+  [Route.Lists]: 'Preislisten',
+  [Route.Virtual]: 'Buden',
+  [Route.Real]: 'Bonbuden',
+  [Route.Cards]: 'Karten',
 };
 
 export default function App({
@@ -31,10 +39,10 @@ export default function App({
           mode="horizontal"
           defaultSelectedKeys={[router.asPath]}
         >
-          {Object.entries(ROUTES).map(([route, title]) => (
+          {Object.values(Route).map((route) => (
             <Menu.Item key={route}>
               <Link href={route}>
-                <a href={route}>{title}</a>
+                <a href={route}>{titles[route]}</a>
               </Link>
             </Menu.Item>
           ))}

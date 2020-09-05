@@ -9,3 +9,13 @@ export function revenueFromTransaction(transaction: TransactionData): number {
     (transaction.tokensAfter - transaction.tokensBefore) * TOKEN_VALUE
   );
 }
+
+export function realRevenueFromTransaction(
+  transaction: TransactionData,
+): number {
+  return (
+    transaction.balanceAfter -
+    transaction.balanceBefore -
+    (transaction.tokensAfter - transaction.tokensBefore) * TOKEN_VALUE
+  );
+}

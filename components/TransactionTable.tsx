@@ -20,10 +20,15 @@ import {FilterDropdownProps} from 'antd/lib/table/interface';
 import memoize from 'lodash.memoize';
 import CardFilter from './CardFilter';
 
+type DefaultFilters = {
+  card?: string[];
+};
+
 const getColums = memoize(
   (
     devices: Device[] | undefined,
     transactions: TransactionData[],
+    defaultFilteredValue?: DefaultFilters,
   ): ColumnsType<TransactionData> => {
     let cardFilter: FilterDropdownProps;
 
@@ -64,6 +69,7 @@ const getColums = memoize(
         dataIndex: 'card',
         key: 'card',
         width: '15%',
+        defaultFilteredValue: defaultFilteredValue?.card,
         filterDropdown: (filterProps) => {
           cardFilter = filterProps;
           return <CardFilter {...filterProps} cards={cards} />;
@@ -163,10 +169,12 @@ const getColums = memoize(
 export default function TransactionTable({
   initialDevices,
   initialTransactions,
+  defaultFilteredValue,
 }: {
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
   transactionType: TransactionType;
+  defaultFilteredValue?: DefaultFilters;
 }) {
   const {items: devices} = useDevices(initialDevices);
   const {items: transactions, deleteItem: deleteTransactions} = useTransactions(
@@ -189,7 +197,7 @@ export default function TransactionTable({
     }
   }, [transactions, deleteTransactions]);
 
-  const columns = getColums(devices, transactions);
+  const columns = getColums(devices, transactions, defaultFilteredValue);
 
   return (
     <>

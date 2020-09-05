@@ -1,6 +1,6 @@
 datasource sqlite {
   provider = "sqlite"
-  url      = "file:./contactless.db"
+  url = "***"
 }
 
 generator client {

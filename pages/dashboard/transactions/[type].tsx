@@ -9,15 +9,22 @@ import {
   getInitialTransactionsVirtual,
 } from '../../../utils/initialProps';
 import TransactionTable from '../../../components/TransactionTable';
+import {useRouter} from 'next/router';
 
 export default function TransactionsPage(props: {
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
   transactionType: TransactionType;
 }) {
+  const {
+    query: {card},
+  } = useRouter();
   return (
     <App>
-      <TransactionTable {...props} />
+      <TransactionTable
+        {...props}
+        defaultFilteredValue={{card: card ? [String(card)] : undefined}}
+      />
     </App>
   );
 }
