@@ -79,15 +79,18 @@ export default function Devices({
         dataSource={devices ?? undefined}
         pagination={false}
         rowKey="id"
+        showSorterTooltip={false}
       />
     </App>
   );
 }
 
-Devices.getInitialProps = async ({req}: NextPageContext) => {
+export const getServerSideProps = async ({req}: NextPageContext) => {
   const [initialLists, initialDevices] = await Promise.all([
     getInitialLists(req),
     getInitialDevices(req),
   ]);
-  return {initialLists, initialDevices};
+  return {
+    props: {initialLists, initialDevices},
+  };
 };

@@ -1,16 +1,11 @@
-import {
-  useDevices,
-  TransactionData,
-  useTransactions,
-  TransactionType,
-} from './useData';
-import {Transactions, Device} from '@prisma/client';
+import {TransactionData} from './useData';
+import {Device} from '@prisma/client';
 import React, {useState, useCallback} from 'react';
 import TransactionBar from './TransactionBar';
 import currencyFormatter from '../utils/currencyFormatter';
 import TimeFilter from './TimeFilter';
 import VirtualTable from './VirtualTable';
-import {Spin, Tooltip} from 'antd';
+import {Tooltip} from 'antd';
 import {ColumnsType} from 'antd/lib/table';
 import {revenueFromTransaction} from '../utils/transaction';
 import {ShoppingCartOutlined} from '@ant-design/icons';
@@ -27,7 +22,7 @@ type DefaultFilters = {
 const getColums = memoize(
   (
     devices: Device[] | undefined,
-    transactions: TransactionData[],
+    transactions: TransactionData[] | undefined,
     defaultFilteredValue?: DefaultFilters,
   ): ColumnsType<TransactionData> => {
     let cardFilter: FilterDropdownProps;
@@ -40,7 +35,7 @@ const getColums = memoize(
         return acc;
       }, new Set()) ?? new Set();
 
-    const cards = transactions.reduce(
+    const cards = transactions?.reduce(
       (acc, cv) => acc.add(cv.card),
       new Set<string>(),
     );
@@ -55,10 +50,11 @@ const getColums = memoize(
         sorter: (a, b) => (b.deviceTime > a.deviceTime ? 1 : -1),
         filterDropdown: TimeFilter,
         defaultSortOrder: 'descend',
-        onFilter: (value, t) => {
+        onFilter: (value: any, t) => {
           if (value) {
             return (
-              value[0].isBefore(t.deviceTime) && value[1].isAfter(t.deviceTime)
+              value[0]?.isBefore(t.deviceTime) &&
+              value[1]?.isAfter(t.deviceTime)
             );
           }
           return true;
@@ -72,7 +68,9 @@ const getColums = memoize(
         defaultFilteredValue: defaultFilteredValue?.card,
         filterDropdown: (filterProps) => {
           cardFilter = filterProps;
-          return <CardFilter {...filterProps} cards={cards} />;
+          return (
+            <CardFilter {...filterProps} cards={Array.from(cards ?? [])} />
+          );
         },
         render: (cardID) => (
           <a
@@ -144,7 +142,7 @@ const getColums = memoize(
         title: 'Pfand',
         key: 'token',
         width: '15%',
-        render: (_, transaction: Transactions) => {
+        render: (_, transaction: TransactionData) => {
           const tokenBalance =
             transaction.tokensAfter - transaction.tokensBefore;
           if (tokenBalance === 0) {
@@ -157,7 +155,7 @@ const getColums = memoize(
             </>
           );
         },
-        sorter: (a: Transactions, b: Transactions) =>
+        sorter: (a: TransactionData, b: TransactionData) =>
           a.tokensBefore - a.tokensAfter - (b.tokensBefore - b.tokensAfter),
       },
     ];
@@ -167,19 +165,16 @@ const getColums = memoize(
 );
 
 export default function TransactionTable({
-  initialDevices,
-  initialTransactions,
+  devices,
+  transactions,
+  deleteTransactions,
   defaultFilteredValue,
 }: {
-  initialDevices?: Device[];
-  initialTransactions?: TransactionData[];
-  transactionType: TransactionType;
+  devices: Device[];
+  transactions: TransactionData[] | undefined;
+  deleteTransactions: (ids: string[]) => void;
   defaultFilteredValue?: DefaultFilters;
 }) {
-  const {items: devices} = useDevices(initialDevices);
-  const {items: transactions, deleteItem: deleteTransactions} = useTransactions(
-    initialTransactions,
-  );
   const [currentDataSource, setCurrentDataSource] = useState<TransactionData[]>(
     transactions || [],
   );
@@ -202,20 +197,17 @@ export default function TransactionTable({
   return (
     <>
       <div className={styles.transactionsTableContainer}>
-        {!transactions ? (
-          <Spin size="large" style={{marginTop: 100}} />
-        ) : (
-          <VirtualTable<TransactionData>
-            bordered
-            size="small"
-            columns={columns}
-            dataSource={transactions}
-            pagination={false}
-            showSorterTooltip={false}
-            rowKey="id"
-            onChange={onChange}
-          />
-        )}
+        <VirtualTable<TransactionData>
+          bordered
+          size="small"
+          columns={columns}
+          dataSource={transactions}
+          loading={!transactions}
+          pagination={false}
+          showSorterTooltip={false}
+          rowKey="id"
+          onChange={onChange}
+        />
       </div>
       {currentDataSource && (
         <TransactionBar

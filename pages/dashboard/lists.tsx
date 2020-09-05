@@ -30,7 +30,7 @@ export default function Lists({
     });
     setNewListName(null);
     setCreateModalVisible(false);
-  }, [setNewListName, setCreateModalVisible, newListName]);
+  }, [newListName, createItem]);
 
   return (
     <App>
@@ -38,7 +38,6 @@ export default function Lists({
       <Modal
         title="Neue Preisliste erstellen"
         visible={createModalVisible}
-        onOk={() => {}}
         okText="Erstellen"
         cancelText="Abbrechen"
         onCancel={() => setCreateModalVisible(false)}
@@ -103,10 +102,12 @@ export default function Lists({
   );
 }
 
-Lists.getInitialProps = async ({req}: NextPageContext) => {
+export const getServerSideProps = async ({req}: NextPageContext) => {
   const [initialLists, initialDevices] = await Promise.all([
     getInitialLists(req),
     getInitialDevices(req),
   ]);
-  return {initialLists, initialDevices};
+  return {
+    props: {initialLists, initialDevices},
+  };
 };

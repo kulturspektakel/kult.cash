@@ -1,5 +1,11 @@
 import App from '../../../components/App';
-import {TransactionData, TransactionType} from '../../../components/useData';
+import {
+  TransactionData,
+  TransactionType,
+  useVirtualTransactions,
+  useRealTransactions,
+  useDevices,
+} from '../../../components/useData';
 import {Device} from '@prisma/client';
 import React from 'react';
 import {NextPageContext} from 'next';
@@ -11,25 +17,62 @@ import {
 import TransactionTable from '../../../components/TransactionTable';
 import {useRouter} from 'next/router';
 
-export default function TransactionsPage(props: {
+type Props = {
+  devices: Device[];
+  initialTransactions?: TransactionData[];
+};
+
+function VirtualTransactionsPage({initialTransactions, ...props}: Props) {
+  const {items, deleteItem} = useVirtualTransactions(initialTransactions);
+  return (
+    <TransactionTable
+      {...props}
+      transactions={items}
+      deleteTransactions={deleteItem}
+    />
+  );
+}
+
+function RealTransactionsPage({initialTransactions, ...props}: Props) {
+  const {items, deleteItem} = useRealTransactions(initialTransactions);
+  return (
+    <TransactionTable
+      {...props}
+      transactions={items}
+      deleteTransactions={deleteItem}
+    />
+  );
+}
+
+export default function TransactionsPage({
+  initialDevices,
+  ...props
+}: {
   initialDevices?: Device[];
   initialTransactions?: TransactionData[];
-  transactionType: TransactionType;
 }) {
   const {
-    query: {card},
+    query: {type, card},
   } = useRouter();
+  const {items: devices} = useDevices(initialDevices);
+  const p = {
+    ...props,
+    defaultFilteredValue: {card: card ? [String(card)] : undefined},
+    devices: devices ?? [],
+  };
+
   return (
     <App>
-      <TransactionTable
-        {...props}
-        defaultFilteredValue={{card: card ? [String(card)] : undefined}}
-      />
+      {type === TransactionType.Real ? (
+        <RealTransactionsPage {...p} />
+      ) : (
+        <VirtualTransactionsPage {...p} />
+      )}
     </App>
   );
 }
 
-TransactionsPage.getInitialProps = async ({req, query}: NextPageContext) => {
+export const getServerSideProps = async ({req, query}: NextPageContext) => {
   const transactionType = query.type;
   const [initialDevices, initialTransactions] = await Promise.all([
     getInitialDevices(req),
@@ -37,5 +80,7 @@ TransactionsPage.getInitialProps = async ({req, query}: NextPageContext) => {
       ? getInitialTransactionsReal(req)
       : getInitialTransactionsVirtual(req),
   ]);
-  return {initialDevices, initialTransactions, transactionType: query.type};
+  return {
+    props: {initialDevices, initialTransactions},
+  };
 };

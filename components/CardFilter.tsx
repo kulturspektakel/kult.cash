@@ -1,42 +1,29 @@
 import {FilterDropdownProps} from 'antd/lib/table/interface';
-import {Button, Space} from 'antd';
-import {Select} from 'antd';
+import {Button, Select} from 'antd';
+import styles from './CardFilter.module.css';
 
 export default function CardFilter({
   confirm,
   clearFilters,
   setSelectedKeys,
-  filters,
   selectedKeys,
   cards,
-}: FilterDropdownProps & {cards: Set<string>}) {
-  const options = [...cards].map((o) => (
+}: FilterDropdownProps & {cards: string[]}) {
+  const options = cards.map((o) => (
     <Select.Option value={o} key={o}>
       {o}
     </Select.Option>
   ));
 
   return (
-    <div style={{width: 300}}>
-      <Select
-        mode="multiple"
-        style={{width: '100%'}}
-        placeholder="Karten ID"
-        value={selectedKeys}
-        onChange={(values) => {
-          setSelectedKeys(values);
-        }}
-      >
-        {options}
-      </Select>
-      <Space>
+    <div className={styles.container}>
+      <div className={styles.buttons}>
         <Button
           type="link"
           size="small"
+          disabled={selectedKeys.length === 0}
           onClick={() => {
-            // setSelectedKeys();
             if (clearFilters) {
-              // console.log(clearFilters);
               clearFilters();
             }
             confirm();
@@ -47,7 +34,20 @@ export default function CardFilter({
         <Button size="small" type="primary" onClick={() => confirm()}>
           OK
         </Button>
-      </Space>
+      </div>
+      <div className={styles.padder}>
+        <Select
+          mode="multiple"
+          style={{width: '100%'}}
+          placeholder="Karten ID"
+          value={selectedKeys}
+          onChange={(values) => {
+            setSelectedKeys(values);
+          }}
+        >
+          {options}
+        </Select>
+      </div>
     </div>
   );
 }

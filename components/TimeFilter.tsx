@@ -5,7 +5,7 @@ import styles from './TimeFilter.module.css';
 import {Moment} from 'moment';
 
 const {RangePicker} = DatePicker;
-type DateRange = [Moment | null, Moment | null];
+export type DateRange = [Moment | null, Moment | null];
 
 export default function TimeFilter({
   clearFilters,
@@ -13,11 +13,11 @@ export default function TimeFilter({
   setSelectedKeys,
   selectedKeys,
 }: FilterDropdownProps) {
-  const value: DateRange | undefined = selectedKeys[0];
+  const value: DateRange | undefined = selectedKeys[0] as any;
   const [local, setLocal] = useState<DateRange | undefined>(value);
   const onDone = useCallback(() => {
     if (local) {
-      setSelectedKeys([local]);
+      setSelectedKeys([local as any]);
     }
     confirm();
   }, [confirm, setSelectedKeys, local]);
@@ -29,8 +29,8 @@ export default function TimeFilter({
         showTime={{format: 'HH:mm'}}
         format="DD.MM.YYYY HH:mm"
         placeholder={['von', 'bis']}
-        onChange={setLocal}
-        value={value}
+        onChange={setLocal as any}
+        value={value as any}
       />
       <Space className={styles.buttons}>
         <Button size="small" type="ghost" onClick={clearFilters}>

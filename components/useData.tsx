@@ -103,8 +103,14 @@ export type TransactionData = Omit<
   createdAt: string;
 };
 
-export const useTransactions = generateHook<
+export const useVirtualTransactions = generateHook<
   TransactionData,
   ListUpdateInput,
   ListCreateInput
 >('transactions/virtual', 'id');
+
+export const useRealTransactions = generateHook<
+  TransactionData,
+  ListUpdateInput,
+  ListCreateInput
+>('transactions/real', 'id');

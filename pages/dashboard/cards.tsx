@@ -1,6 +1,10 @@
 import {Badge, Tooltip} from 'antd';
 import App, {Route} from '../../components/App';
-import {TransactionData, useTransactions} from '../../components/useData';
+import {
+  TransactionData,
+  useVirtualTransactions,
+  useRealTransactions,
+} from '../../components/useData';
 import {
   getInitialTransactionsReal,
   getInitialTransactionsVirtual,
@@ -35,6 +39,13 @@ function useCardData(
   initialTransactionsReal?: TransactionData[],
   initialTransactionsVirtual?: TransactionData[],
 ) {
+  const {items: transactionsVirtual} = useVirtualTransactions(
+    initialTransactionsVirtual,
+  );
+  const {items: transactionsReal} = useRealTransactions(
+    initialTransactionsReal,
+  );
+
   return useMemo((): CardSum[] => {
     const cards = new Set<string>();
     let maxTime = 0;
@@ -52,8 +63,8 @@ function useCardData(
       transactions.push(t);
       return acc;
     };
-    const virtual = initialTransactionsVirtual?.reduce(reducer, new Map());
-    const real = initialTransactionsReal?.reduce(reducer, new Map());
+    const virtual = transactionsVirtual?.reduce(reducer, new Map());
+    const real = transactionsReal?.reduce(reducer, new Map());
 
     const getDays = (card: string): [boolean, boolean, boolean] => {
       const dayMap = [
@@ -101,7 +112,7 @@ function useCardData(
           ?.reduce((acc, t) => (acc += revenueFromTransaction(t)), 0) ?? 0,
       ...lastTransaction(card),
     }));
-  }, [initialTransactionsReal, initialTransactionsVirtual]);
+  }, [transactionsReal, transactionsVirtual]);
 }
 
 export default function Cards({
@@ -111,11 +122,10 @@ export default function Cards({
   initialTransactionsReal?: TransactionData[];
   initialTransactionsVirtual?: TransactionData[];
 }) {
-  const {items: transactionsVirtual} = useTransactions(
+  const cards = useCardData(
+    initialTransactionsReal,
     initialTransactionsVirtual,
   );
-  // const {items: transactionsReal} = useTransactions(initialTransactionsReal);
-  const cards = useCardData(initialTransactionsReal, transactionsVirtual);
 
   return (
     <App>
@@ -167,7 +177,7 @@ export default function Cards({
                   'DD.MM.YYYY HH:mm',
                 )}`}
               >
-                {currencyFormatter.format(v / 100)}
+                {currencyFormatter.format(v / 100) as any}
               </Tooltip>
             ),
           },
@@ -208,6 +218,7 @@ export default function Cards({
         rowKey="id"
         bordered
         size="small"
+        showSorterTooltip={false}
       />
     </App>
   );
