@@ -2,28 +2,35 @@ import currencyFormatter from '../utils/currencyFormatter';
 import {Button, Drawer, Radio, Modal} from 'antd';
 import TransactionStats, {GroupBy} from './TransactionStats';
 import {useState, useCallback, useRef} from 'react';
-import {FileExcelOutlined, DeleteOutlined} from '@ant-design/icons';
+import {
+  FileExcelOutlined,
+  DeleteOutlined,
+  PropertySafetyFilled,
+} from '@ant-design/icons';
 import zipcelx from 'zipcelx';
-import {TransactionData} from './useData';
+import {TransactionData, TransactionType} from './useData';
 import {ColumnsType} from 'antd/lib/table';
 import styles from './TransactionBar.module.css';
+import {revenueFromTransaction} from '../utils/transaction';
 
 export const BAR_HEIGHT = 60;
 export default function TransactionBar({
   data,
   columns,
   onDelete,
+  type,
 }: {
   data: TransactionData[];
   columns: ColumnsType<TransactionData>;
   onDelete: () => void;
+  type: TransactionType;
 }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>(GroupBy.List);
   const ref = useRef<HTMLDivElement>(null);
 
   const revenue = data.reduce(
-    (acc, cv) => (acc += cv.balanceBefore - cv.balanceAfter),
+    (acc, cv) => (acc += revenueFromTransaction(cv, type)),
     0,
   );
 
@@ -119,7 +126,7 @@ export default function TransactionBar({
         }
         height="70%"
       >
-        <TransactionStats data={data} groupBy={groupBy} />
+        <TransactionStats data={data} groupBy={groupBy} type={type} />
       </Drawer>
     </>
   );

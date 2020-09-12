@@ -1,4 +1,4 @@
-import {TransactionData} from './useData';
+import {TransactionData, TransactionType} from './useData';
 import {Device} from '@prisma/client';
 import React, {useState, useCallback} from 'react';
 import TransactionBar from './TransactionBar';
@@ -23,6 +23,7 @@ const getColums = memoize(
   (
     devices: Device[] | undefined,
     transactions: TransactionData[] | undefined,
+    type: TransactionType,
     defaultFilteredValue?: DefaultFilters,
   ): ColumnsType<TransactionData> => {
     let cardFilter: FilterDropdownProps;
@@ -119,7 +120,7 @@ const getColums = memoize(
           return (
             <div className={styles.revenueCell}>
               {currencyFormatter.format(
-                revenueFromTransaction(transaction) / 100,
+                revenueFromTransaction(transaction, type) / 100,
               )}
               {transaction.cartItems.length > 0 && (
                 <Tooltip
@@ -136,7 +137,7 @@ const getColums = memoize(
           );
         },
         sorter: (a: TransactionData, b: TransactionData) =>
-          revenueFromTransaction(a) - revenueFromTransaction(b),
+          revenueFromTransaction(a, type) - revenueFromTransaction(b, type),
       },
       {
         title: 'Pfand',
@@ -169,10 +170,12 @@ export default function TransactionTable({
   transactions,
   deleteTransactions,
   defaultFilteredValue,
+  type,
 }: {
   devices: Device[];
   transactions: TransactionData[] | undefined;
   deleteTransactions: (ids: string[]) => void;
+  type: TransactionType;
   defaultFilteredValue?: DefaultFilters;
 }) {
   const [currentDataSource, setCurrentDataSource] = useState<TransactionData[]>(
@@ -192,7 +195,7 @@ export default function TransactionTable({
     }
   }, [transactions, deleteTransactions]);
 
-  const columns = getColums(devices, transactions, defaultFilteredValue);
+  const columns = getColums(devices, transactions, type, defaultFilteredValue);
 
   return (
     <>

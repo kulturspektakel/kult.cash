@@ -1,4 +1,4 @@
-import {TransactionData} from './useData';
+import {TransactionData, TransactionType} from './useData';
 import {Table, Row, Col, Card, Statistic} from 'antd';
 import currencyFormatter from '../utils/currencyFormatter';
 import {ColumnsType} from 'antd/lib/table';
@@ -66,6 +66,7 @@ function color(label: string): string {
 function groupByProdcut(
   acc: Map<string, TableRow>,
   transaction: TransactionData,
+  type: TransactionType,
 ) {
   let revenueFromKnownSource = 0;
 
@@ -84,7 +85,7 @@ function groupByProdcut(
   });
 
   const revenueFromUnknownSource =
-    revenueFromKnownSource - revenueFromTransaction(transaction);
+    revenueFromKnownSource - revenueFromTransaction(transaction, type);
   if (revenueFromUnknownSource > 0) {
     const item = acc.get(UNKNOWN) ?? {
       key: UNKNOWN,
@@ -99,7 +100,11 @@ function groupByProdcut(
   return acc;
 }
 
-function groupByList(acc: Map<string, TableRow>, transaction: TransactionData) {
+function groupByList(
+  acc: Map<string, TableRow>,
+  transaction: TransactionData,
+  type: TransactionType,
+) {
   const key = transaction.listName || UNKNOWN;
   const item = acc.get(key) ?? {
     key,
@@ -107,7 +112,7 @@ function groupByList(acc: Map<string, TableRow>, transaction: TransactionData) {
     revenue: 0,
   };
   item.amount++;
-  item.revenue += revenueFromTransaction(transaction);
+  item.revenue += revenueFromTransaction(transaction, type);
 
   return acc.set(key, item);
 }
@@ -115,6 +120,7 @@ function groupByList(acc: Map<string, TableRow>, transaction: TransactionData) {
 export default function TransactionStats(props: {
   data: TransactionData[];
   groupBy: GroupBy;
+  type: TransactionType;
 }) {
   const GUTTER: [number, number] = [16, 16];
 
@@ -126,7 +132,7 @@ export default function TransactionStats(props: {
             title="Umsatz"
             value={
               props.data.reduce(
-                (acc, cv) => acc + revenueFromTransaction(cv),
+                (acc, cv) => acc + revenueFromTransaction(cv, props.type),
                 0,
               ) / 100
             }
@@ -168,17 +174,29 @@ export default function TransactionStats(props: {
       </Row>
       <Row gutter={GUTTER}>
         <Col span={24}>
-          <RevenueOverTime data={props.data} groupBy={props.groupBy} />
+          <RevenueOverTime
+            data={props.data}
+            groupBy={props.groupBy}
+            type={props.type}
+          />
         </Col>
       </Row>
       <Row gutter={GUTTER}>
-        <ProductTable data={props.data} groupBy={props.groupBy} />
+        <ProductTable
+          data={props.data}
+          groupBy={props.groupBy}
+          type={props.type}
+        />
       </Row>
     </div>
   );
 }
 
-function ProductTable(props: {data: TransactionData[]; groupBy: GroupBy}) {
+function ProductTable(props: {
+  data: TransactionData[];
+  groupBy: GroupBy;
+  type: TransactionType;
+}) {
   const data = props.data.reduce<Map<string, TableRow>>(
     props.groupBy === GroupBy.Product ? groupByProdcut : groupByList,
     new Map<string, TableRow>(),
@@ -237,7 +255,11 @@ function ProductTable(props: {data: TransactionData[]; groupBy: GroupBy}) {
   );
 }
 
-function RevenueOverTime(props: {data: TransactionData[]; groupBy: GroupBy}) {
+function RevenueOverTime(props: {
+  data: TransactionData[];
+  groupBy: GroupBy;
+  type: TransactionType;
+}) {
   const timeGroup = 3600000;
   let min = Infinity;
   let max = -Infinity;
@@ -256,9 +278,9 @@ function RevenueOverTime(props: {data: TransactionData[]; groupBy: GroupBy}) {
 
       const childMap = acc.get(hour)!;
       if (props.groupBy === GroupBy.Product) {
-        groupByProdcut(childMap, transaction);
+        groupByProdcut(childMap, transaction, props.type);
       } else {
-        groupByList(childMap, transaction);
+        groupByList(childMap, transaction, props.type);
       }
       return acc;
     },

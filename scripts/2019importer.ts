@@ -100,8 +100,14 @@ async function parseLine(line: string): Promise<boolean> {
       },
       balanceBefore: parseInt(balanceBefore, 10),
       tokensBefore: parseInt(tokensBefore, 10),
-      balanceAfter: parseInt(balanceAfter, 10),
-      tokensAfter: parseInt(tokensAfter, 10),
+      balanceAfter:
+        mode === TransactionMessage.Mode.CASHOUT
+          ? 0
+          : parseInt(balanceAfter, 10),
+      tokensAfter:
+        mode === TransactionMessage.Mode.CASHOUT
+          ? 0
+          : parseInt(tokensAfter, 10),
       cartItems: cart
         ? {
             create: cart,
@@ -154,8 +160,8 @@ function parseMode(mode: string): TransactionMessage.Mode | null {
 }
 
 function parseDate(date: string): Date {
-  let day = parseInt(date.substr(5, 2), 10);
-  let hour = parseInt(date.substr(11, 2), 10);
+  const day = parseInt(date.substr(5, 2), 10);
+  const hour = parseInt(date.substr(11, 2), 10);
   if (day < 19 || day > 21 || hour > 23) {
     // invalid date, let's use the last transaction as base
     return lastTransactionDate;

@@ -15,6 +15,7 @@ import VirtualTable from '../../components/VirtualTable';
 import {
   revenueFromTransaction,
   realRevenueFromTransaction,
+  virtualRevenueFromTransaction,
 } from '../../utils/transaction';
 import currencyFormatter from '../../utils/currencyFormatter';
 import Link from 'next/link';
@@ -109,7 +110,8 @@ function useCardData(
       virtualTransactionsSum:
         virtual
           ?.get(card)
-          ?.reduce((acc, t) => (acc += revenueFromTransaction(t)), 0) ?? 0,
+          ?.reduce((acc, t) => (acc += virtualRevenueFromTransaction(t)), 0) ??
+        0,
       ...lastTransaction(card),
     }));
   }, [transactionsReal, transactionsVirtual]);

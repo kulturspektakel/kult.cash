@@ -20,6 +20,7 @@ import {useRouter} from 'next/router';
 type Props = {
   devices: Device[];
   initialTransactions?: TransactionData[];
+  type: TransactionType;
 };
 
 function VirtualTransactionsPage({initialTransactions, ...props}: Props) {
@@ -57,6 +58,7 @@ export default function TransactionsPage({
   const {items: devices} = useDevices(initialDevices);
   const p = {
     ...props,
+    type: type as TransactionType,
     defaultFilteredValue: {card: card ? [String(card)] : undefined},
     devices: devices ?? [],
   };

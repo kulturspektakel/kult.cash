@@ -1,8 +1,19 @@
-import {TransactionData} from '../components/useData';
+import {TransactionData, TransactionType} from '../components/useData';
 
 const TOKEN_VALUE = 200;
 
-export function revenueFromTransaction(transaction: TransactionData): number {
+export function revenueFromTransaction(
+  transaction: TransactionData,
+  type: TransactionType,
+): number {
+  return type === TransactionType.Real
+    ? realRevenueFromTransaction(transaction)
+    : virtualRevenueFromTransaction(transaction);
+}
+
+export function virtualRevenueFromTransaction(
+  transaction: TransactionData,
+): number {
   return (
     transaction.balanceBefore -
     transaction.balanceAfter -
@@ -13,9 +24,5 @@ export function revenueFromTransaction(transaction: TransactionData): number {
 export function realRevenueFromTransaction(
   transaction: TransactionData,
 ): number {
-  return (
-    transaction.balanceAfter -
-    transaction.balanceBefore -
-    (transaction.tokensAfter - transaction.tokensBefore) * TOKEN_VALUE
-  );
+  return virtualRevenueFromTransaction(transaction) * -1;
 }
