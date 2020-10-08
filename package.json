@@ -22,7 +22,7 @@
     "express": "^4.17.1",
     "lodash.memoize": "^4.1.2",
     "moment": "^2.24.0",
-    "next": "^9.5.2",
+    "next": "^9.5.4",
     "next-absolute-url": "^1.2.2",
     "next-auth": "^3.1.0",
     "protobufjs": "^6.9.0",
