@@ -3,7 +3,7 @@ import App from '../../components/App';
 import ProductList from '../../components/ProductList';
 import {ListUpdateInput, List, Device} from '@prisma/client';
 import {useState, useCallback} from 'react';
-import {NextPageContext} from 'next';
+import {GetServerSideProps} from 'next';
 import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
 import {useLists, useDevices} from '../../components/useData';
 
@@ -102,7 +102,7 @@ export default function Lists({
   );
 }
 
-export const getServerSideProps = async ({req}: NextPageContext) => {
+export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const [initialLists, initialDevices] = await Promise.all([
     getInitialLists(req),
     getInitialDevices(req),

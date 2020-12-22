@@ -9,7 +9,7 @@ import {
   getInitialTransactionsReal,
   getInitialTransactionsVirtual,
 } from '../../utils/initialProps';
-import {NextPageContext} from 'next';
+import {GetServerSideProps} from 'next';
 import {useMemo} from 'react';
 import VirtualTable from '../../components/VirtualTable';
 import {
@@ -226,7 +226,7 @@ export default function Cards({
   );
 }
 
-export const getServerSideProps = async ({req}: NextPageContext) => {
+export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const [
     initialTransactionsReal,
     initialTransactionsVirtual,

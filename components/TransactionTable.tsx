@@ -214,6 +214,7 @@ export default function TransactionTable({
       </div>
       {currentDataSource && (
         <TransactionBar
+          type={type}
           data={currentDataSource}
           columns={columns}
           onDelete={onDelete}

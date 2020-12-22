@@ -8,7 +8,7 @@ import {
 } from '../../../components/useData';
 import {Device} from '@prisma/client';
 import React from 'react';
-import {NextPageContext} from 'next';
+import {GetServerSideProps} from 'next';
 import {
   getInitialDevices,
   getInitialTransactionsReal,
@@ -74,7 +74,7 @@ export default function TransactionsPage({
   );
 }
 
-export const getServerSideProps = async ({req, query}: NextPageContext) => {
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
   const transactionType = query.type;
   const [initialDevices, initialTransactions] = await Promise.all([
     getInitialDevices(req),

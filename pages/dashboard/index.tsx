@@ -6,7 +6,7 @@ import App from '../../components/App';
 import {useDevices, useLists} from '../../components/useData';
 import RelativeDate from '../../components/RelativeDate';
 import {getInitialLists, getInitialDevices} from '../../utils/initialProps';
-import {NextPageContext} from 'next';
+import {GetServerSideProps} from 'next';
 const {Option} = Select;
 
 const getColumns = memoize((lists: List[] | undefined, updateDevice) => [
@@ -85,7 +85,7 @@ export default function Devices({
   );
 }
 
-export const getServerSideProps = async ({req}: NextPageContext) => {
+export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const [initialLists, initialDevices] = await Promise.all([
     getInitialLists(req),
     getInitialDevices(req),

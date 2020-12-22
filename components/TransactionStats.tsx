@@ -19,7 +19,7 @@ const Pie = React.lazy(() =>
 );
 const StackedArea = React.lazy(() =>
   import('@ant-design/charts').then((module) => ({
-    default: module.StackedArea,
+    default: module.Area,
   })),
 );
 
@@ -34,7 +34,7 @@ type TableRow = {
   revenue: number;
 };
 
-function color(label: string): string {
+function color(datum: Record<string, any>): string {
   const COLOR_PLATE_20 = [
     '#5B8FF9',
     '#BDD2FD',
@@ -57,16 +57,16 @@ function color(label: string): string {
     '#FF99C3',
     '#FFD6E7',
   ];
-
   return COLOR_PLATE_20[
-    parseInt(label.replace(/[^A-Za-z0-9]/g, ''), 36) % COLOR_PLATE_20.length
+    parseInt(datum[Object.keys(datum)[0]].replace(/[^A-Za-z0-9]/g, ''), 36) %
+      COLOR_PLATE_20.length
   ];
 }
 
 function groupByProdcut(
   acc: Map<string, TableRow>,
   transaction: TransactionData,
-  type: TransactionType,
+  // type: TransactionType,
 ) {
   let revenueFromKnownSource = 0;
 
@@ -85,7 +85,8 @@ function groupByProdcut(
   });
 
   const revenueFromUnknownSource =
-    revenueFromKnownSource - revenueFromTransaction(transaction, type);
+    revenueFromKnownSource -
+    revenueFromTransaction(transaction, TransactionType.Virtual);
   if (revenueFromUnknownSource > 0) {
     const item = acc.get(UNKNOWN) ?? {
       key: UNKNOWN,
@@ -103,7 +104,7 @@ function groupByProdcut(
 function groupByList(
   acc: Map<string, TableRow>,
   transaction: TransactionData,
-  type: TransactionType,
+  // type: TransactionType,
 ) {
   const key = transaction.listName || UNKNOWN;
   const item = acc.get(key) ?? {
@@ -112,7 +113,7 @@ function groupByList(
     revenue: 0,
   };
   item.amount++;
-  item.revenue += revenueFromTransaction(transaction, type);
+  item.revenue += revenueFromTransaction(transaction, TransactionType.Virtual);
 
   return acc.set(key, item);
 }
@@ -228,25 +229,29 @@ function ProductTable(props: {
           pagination={false}
           size="small"
           columns={columns}
-          dataSource={Array.from(data.values()).sort(
+          dataSource={Array.from<TableRow>(data.values()).sort(
             (a, b) => b.revenue - a.revenue,
           )}
-          rowKey="product"
+          rowKey="key"
         />
       </Col>
       <Col span={8}>
         <Card title="Anzahl" size="small">
           <Suspense fallback={null}>
             <Pie
-              forceFit
               radius={0.8}
-              data={Array.from(data.values()).map((v) => ({
+              data={Array.from<TableRow>(data.values()).map((v) => ({
                 type: v.key,
                 value: v.amount,
               }))}
+              label={{
+                type: 'outer',
+                content: '{name}',
+              }}
               angleField="value"
               colorField="type"
               color={color}
+              legend={false}
             />
           </Suspense>
         </Card>
@@ -278,9 +283,9 @@ function RevenueOverTime(props: {
 
       const childMap = acc.get(hour)!;
       if (props.groupBy === GroupBy.Product) {
-        groupByProdcut(childMap, transaction, props.type);
+        groupByProdcut(childMap, transaction /*, props.type*/);
       } else {
-        groupByList(childMap, transaction, props.type);
+        groupByList(childMap, transaction /*, props.type*/);
       }
       return acc;
     },
@@ -311,11 +316,10 @@ function RevenueOverTime(props: {
     <Card title="Umsatz" size="small">
       <Suspense fallback={null}>
         <StackedArea
-          forceFit
           data={data}
           xField="hour"
           yField="revenue"
-          stackField="type"
+          // stackField="type"
           color={color}
         />
       </Suspense>
