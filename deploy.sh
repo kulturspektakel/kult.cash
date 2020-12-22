@@ -1,3 +1,5 @@
+#!/bin/sh
+
 rm -rf dist .next
 git reset --hard HEAD
 git pull
