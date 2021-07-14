@@ -1,20 +1,20 @@
-name: Deployment
+name: Deploy
 
 on:
   push:
-    branches: master
+    branches:
+      - master
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@master
-        with:
-          host: kult.cash
-          username: kultursp
-          key: ${{ secrets.KEY }}
-          port: 22
-          script: |
-            cd /var/www/virtual/kultursp/kult.cash/
-            ./deploy.sh
+      - uses: actions/checkout@v2
+
+      - name: install
+        run: yarn
+      - name: deploy
+        run: yarn vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

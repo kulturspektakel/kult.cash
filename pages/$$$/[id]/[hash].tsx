@@ -2,8 +2,24 @@ import {GetServerSideProps} from 'next';
 import {useEffect, useState} from 'react';
 import styles from './balance.module.css';
 import Head from 'next/head';
-import currencyFormatter from '../../../utils/currencyFormatter';
-import verifySignature from '../../../utils/verifySignature';
+import {createHash} from 'crypto';
+
+const verifySignature = (
+  balance: number,
+  tokens: number,
+  id: string,
+  signature: string,
+) =>
+  createHash('sha1')
+    .update(`${balance}${tokens}${id}${process.env.SALT}`)
+    .digest('hex')
+    .substr(0, 10) === signature;
+
+const currencyFormatter = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+});
+
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
@@ -12,7 +28,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const pathname = context.resolvedUrl;
 
   if (BALANCE_ROUTE.test(pathname)) {
-    const [, id, b, t, signature] = pathname.match(BALANCE_ROUTE);
+    const [, id, b, t, signature] = pathname.match(BALANCE_ROUTE) ?? [];
     const balance = parseInt(b, 10);
     const tokens = parseInt(t, 10);
     if (verifySignature(balance, tokens, id, signature)) {
