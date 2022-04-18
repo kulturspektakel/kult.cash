@@ -20,11 +20,11 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
   currency: 'EUR',
 });
 
-
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const BALANCE_ROUTE = /^\/\$\$\$\/([A-F0-9]{8})\/([0-9]{4})([0-9]{1})([0-9a-f]+)$/;
+  const BALANCE_ROUTE =
+    /^\/\$\$\$\/([A-F0-9]+)\/([0-9]{4})([0-9]{1})([0-9a-f]+)$/;
   const pathname = context.resolvedUrl;
 
   if (BALANCE_ROUTE.test(pathname)) {
