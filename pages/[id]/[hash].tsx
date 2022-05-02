@@ -9,11 +9,22 @@ const verifySignature = (
   tokens: number,
   id: string,
   signature: string,
-) =>
-  createHash('sha1')
-    .update(`${balance}${tokens}${id}${process.env.SALT}`)
-    .digest('hex')
-    .substr(0, 10) === signature;
+) => {
+  console.log(`${balance}${tokens}${id}${process.env.SALT}`);
+  console.log(
+    createHash('sha1')
+      .update(`${balance}${tokens}${id}${process.env.SALT}`)
+      .digest('hex')
+      .substr(0, 10),
+  );
+  console.log(signature);
+  return (
+    createHash('sha1')
+      .update(`${balance}${tokens}${id}${process.env.SALT}`)
+      .digest('hex')
+      .substr(0, 10) === signature
+  );
+};
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {
   style: 'currency',
@@ -23,14 +34,14 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const BALANCE_ROUTE =
-    /^\/\$\$\$\/([A-F0-9]+)\/([0-9]{4})([0-9]{1})([0-9a-f]+)$/;
+  const BALANCE_ROUTE = /^\/([A-F0-9]+)\/([0-9]{4})([0-9]{1})([0-9a-f]+)$/;
   const pathname = context.resolvedUrl;
 
   if (BALANCE_ROUTE.test(pathname)) {
     const [, id, b, t, signature] = pathname.match(BALANCE_ROUTE) ?? [];
     const balance = parseInt(b, 10);
     const tokens = parseInt(t, 10);
+
     if (verifySignature(balance, tokens, id, signature)) {
       return {props: {balance, tokens}};
     }
