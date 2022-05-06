@@ -10,14 +10,6 @@ const verifySignature = (
   id: string,
   signature: string,
 ) => {
-  console.log(`${balance}${tokens}${id}${process.env.SALT}`);
-  console.log(
-    createHash('sha1')
-      .update(`${balance}${tokens}${id}${process.env.SALT}`)
-      .digest('hex')
-      .substr(0, 10),
-  );
-  console.log(signature);
   return (
     createHash('sha1')
       .update(`${balance}${tokens}${id}${process.env.SALT}`)
