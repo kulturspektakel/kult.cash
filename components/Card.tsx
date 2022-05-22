@@ -1,21 +1,10 @@
-import {GetServerSideProps} from 'next';
 import {useEffect, useState} from 'react';
-import styles from './balance.module.css';
+import styles from './Card.module.css';
 import Head from 'next/head';
-import {createHash} from 'crypto';
 
-const verifySignature = (
-  balance: number,
-  tokens: number,
-  id: string,
-  signature: string,
-) => {
-  return (
-    createHash('sha1')
-      .update(`${balance}${tokens}${id}${process.env.SALT}`)
-      .digest('hex')
-      .substr(0, 10) === signature
-  );
+type Props = {
+  balance: number;
+  deposit: number;
 };
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {
@@ -23,32 +12,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
   currency: 'EUR',
 });
 
-export const getServerSideProps: GetServerSideProps<Props> = async (
-  context,
-) => {
-  const BALANCE_ROUTE = /^\/([A-F0-9]+)\/([0-9]{4})([0-9]{1})([0-9a-f]+)$/;
-  const pathname = context.resolvedUrl;
-
-  if (BALANCE_ROUTE.test(pathname)) {
-    const [, id, b, t, signature] = pathname.match(BALANCE_ROUTE) ?? [];
-    const balance = parseInt(b, 10);
-    const tokens = parseInt(t, 10);
-
-    if (verifySignature(balance, tokens, id, signature)) {
-      return {props: {balance, tokens}};
-    }
-  }
-  context.res.statusCode = 404;
-  context.res.end();
-  return {props: {balance: -1, tokens: -1}};
-};
-
-type Props = {
-  balance: number;
-  tokens: number;
-};
-
-export default function Balance({balance, tokens}: Props) {
+export default function Balance({balance, deposit}: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setTimeout(() => setMounted(true), 200);
@@ -211,7 +175,7 @@ export default function Balance({balance, tokens}: Props) {
                 </g>
               </g>
               <text transform="translate(86.09 140)" fontSize="16" fill="#fff">
-                {tokens}
+                {deposit}
               </text>
               <text transform="translate(13.36 140)" fontSize="16" fill="#fff">
                 {currencyFormatter.format(balance / 100)}
