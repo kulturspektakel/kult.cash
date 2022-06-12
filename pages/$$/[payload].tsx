@@ -1,35 +1,48 @@
 import {GetServerSideProps} from 'next';
-import {createHash} from 'crypto';
 import Card from '../../components/Card';
-
-function verifySignature(payload: Buffer): boolean {
-  const buffer = Buffer.concat([
-    payload.subarray(0, 12),
-    Buffer.from(process.env.SALT ?? '', 'utf-8'),
-  ]);
-
-  const signature = createHash('sha1')
-    .update(buffer)
-    .digest('hex')
-    .substring(0, 10);
-  return signature === payload.subarray(12).toString('hex');
-}
+import request, {gql} from 'graphql-request';
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const payload = String(context.query.payload);
+  try {
+    const data = await request(
+      'https://api.kulturspektakel.de/graphql',
+      gql`
+        query CardStatus($payload: String!) {
+          cardStatus(payload: $payload) {
+            balance
+            deposit
+            cardId
+            recentTransactions {
+              balanceAfter
+              balanceBefore
+              ... on MissingTransaction {
+                numberOfMissingTransactions
+              }
+              ... on CardTransaction {
+                Order {
+                  items {
+                    productList {
+                      emoji
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      {
+        payload: String(context.query.payload),
+      },
+    );
 
-  const payloadBuffer = Buffer.from(payload, 'base64');
-  if (verifySignature(payloadBuffer)) {
-    const deposit = payloadBuffer.slice(9, 10).readUInt8();
-    const balance = payloadBuffer.slice(10, 12).readUInt16LE();
-    return {props: {balance, deposit}};
-  }
+    return {props: data.cardStatus};
+  } catch (e) {}
 
   context.res.statusCode = 404;
   context.res.end();
-  return {props: {balance: -1, deposit: -1}};
 };
 
 type Props = {
