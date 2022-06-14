@@ -1,6 +1,7 @@
 schema: https://api.kulturspektakel.de/graphql
 documents:
-  - ./pages/**/*.tsx
+  - './pages/**/*.tsx'
+  - './components/**/*.tsx'
 generates:
   graphql/generated.ts:
     plugins:

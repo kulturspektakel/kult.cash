@@ -1,0 +1,37 @@
+.root {
+  user-select: none;
+  max-width: 500px;
+  display: flex;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heading {
+  margin: 0;
+  margin-top: 30px;
+  margin-bottom: 12px;
+  top: 0;
+}
+
+.info {
+  font-size: 0.9em;
+  max-width: 500px;
+  color: #8B8A8F;
+  line-height: 135%;
+  margin-top: 12px;
+  hyphens: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.recentTransactions {
+  background: white;
+  border-radius: 15px;
+  margin: 0;
+  padding: 0;
+}
+  

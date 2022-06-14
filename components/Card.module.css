@@ -1,61 +1,23 @@
-.root {
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none;
-  max-width: 600px;
-  height: 100%;
-  display: flex;
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 15px;
-}
-
-.heading {
-  margin: 0;
-  margin-top: 30px;
-  position: fixed;
-  top: 0;
-}
-
 .wrapper {
   position: relative;
-  margin-top: 70px;
   z-index: 2;
-  overflow: hidden;
+  perspective: 1000px;
 }
 
 .card {
-  transition: 0.5s all ease-out;
-  transform: translateX(100%);
+  transition: 0.7s all ease-out;
+  transform: rotateX(20deg) rotateY(-5deg) scale(110%);
+  box-shadow: rgba(50, 50, 93, 0.25) 20px 23px 27px 10px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   opacity: 0;
-  width: calc(100% - 15px);
+  border-radius: 17px;
+}
+
+.card svg {
+  display: block;
 }
 
 .activeCard {
-  transform: translateX(0px);
+  transform: rotateX(0deg) rotateY(0deg) scale(100%);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   opacity: 1;
-}
-
-.info {
-  max-width: 600px;
-  opacity: 0.5;
-  font-size: 18px;
-  line-height: 135%;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  hyphens: auto;
-  position: fixed;
-  top: 90px;
-  padding-right: 15px;
-}
-
-.aspect {
-  padding-top: 63%;
 }
