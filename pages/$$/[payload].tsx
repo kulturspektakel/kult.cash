@@ -14,9 +14,9 @@ export const getServerSideProps: GetServerSideProps<CardStatusQuery> = async (
       'https://api.kulturspektakel.de/graphql',
       PageQuery,
       {
-        payload: Array.isArray(context.query.payload)
-          ? context.query.payload.join('/')
-          : context.query.payload ?? '',
+        payload: context.query.id
+          ? `${context.query.id}/${context.query.payload}`
+          : String(context.query.payload),
       },
     );
 
