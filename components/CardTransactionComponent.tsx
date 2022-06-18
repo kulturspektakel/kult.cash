@@ -36,7 +36,7 @@ export default function CardTransactionComponent(
   const total = props.balanceBefore - props.balanceAfter;
   let title: string | undefined = undefined;
   let subtitle: string | undefined = undefined;
-  let subtitle2: string | undefined = undefined;
+  let subtitle2: React.ReactElement | undefined = undefined;
   let emoji: string | undefined = undefined;
 
   if (props.__typename === 'CardTransaction') {
@@ -44,14 +44,28 @@ export default function CardTransactionComponent(
     const productList = order?.items.find(() => true)?.productList;
     emoji = productList?.emoji ?? '';
     title = productList?.name;
-    subtitle2 = new Date(props.deviceTime).toLocaleString('de-DE', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Europe/Berlin',
-    });
+    const d = new Date(props.deviceTime);
+
+    // Safari adds commas which breaks SSR
+    subtitle2 = (
+      <>
+        {d
+          .toLocaleDateString('de-DE', {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'long',
+            timeZone: 'Europe/Berlin',
+          })
+          .replace(',', '')}
+        ,&nbsp;
+        {d.toLocaleTimeString('de-DE', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Europe/Berlin',
+        })}
+        &nbsp;Uhr
+      </>
+    );
 
     const p = order?.items.map((i) => `${i.amount}× ${i.name}`) ?? [];
     const deposit = props.depositAfter - props.depositBefore;

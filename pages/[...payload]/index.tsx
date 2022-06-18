@@ -9,19 +9,31 @@ import Page, {PageQuery} from '../../components/Page';
 export const getServerSideProps: GetServerSideProps<CardStatusQuery> = async (
   context,
 ) => {
+  if (!Array.isArray(context.query.payload)) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const [dollar, ...payload] = context.query.payload;
+  if (dollar !== '$$' && dollar !== '$$$') {
+    return {
+      notFound: true,
+    };
+  }
+
   try {
     const data = await request<CardStatusQuery, CardStatusQueryVariables>(
       'https://api.kulturspektakel.de/graphql',
       PageQuery,
       {
-        payload: context.query.id
-          ? `${context.query.id}/${context.query.payload}`
-          : String(context.query.payload),
+        payload: payload.join('/'),
       },
     );
 
     return {props: data};
   } catch (e) {
+    console.error(e);
     return {
       notFound: true,
     };
