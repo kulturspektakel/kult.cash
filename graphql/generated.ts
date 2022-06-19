@@ -134,8 +134,6 @@ export type CardTransaction = Transaction & {
   depositAfter: Scalars['Int'];
   depositBefore: Scalars['Int'];
   deviceTime: Scalars['DateTime'];
-  /** Total transaction amount, including deposit. Negative values indicate top ups/deposit returns. */
-  total?: Maybe<Scalars['Int']>;
   transactionType: CardTransactionType;
 };
 
@@ -255,8 +253,6 @@ export type MissingTransaction = Transaction & {
   depositAfter: Scalars['Int'];
   depositBefore: Scalars['Int'];
   numberOfMissingTransactions: Scalars['Int'];
-  /** Total transaction amount, including deposit. Negative values indicate top ups/deposit returns. */
-  total?: Maybe<Scalars['Int']>;
 };
 
 export type Mutation = {
@@ -628,8 +624,6 @@ export type Transaction = {
   balanceBefore: Scalars['Int'];
   depositAfter: Scalars['Int'];
   depositBefore: Scalars['Int'];
-  /** Total transaction amount, including deposit. Negative values indicate top ups/deposit returns. */
-  total?: Maybe<Scalars['Int']>;
 };
 
 export type Viewer = Node & {
@@ -647,91 +641,6 @@ export type CardFragmentFragment = {
 };
 
 type CardTransactionFragment_CardTransaction_Fragment = {
-  __typename?: 'CardTransaction';
-  deviceTime: any;
-  depositBefore: number;
-  depositAfter: number;
-  balanceBefore: number;
-  balanceAfter: number;
-  Order: Array<{
-    __typename?: 'Order';
-    items: Array<{
-      __typename?: 'OrderItem';
-      amount: number;
-      name: string;
-      productList?: {
-        __typename?: 'ProductList';
-        emoji?: string | null;
-        name: string;
-      } | null;
-    }>;
-  }>;
-};
-
-type CardTransactionFragment_MissingTransaction_Fragment = {
-  __typename?: 'MissingTransaction';
-  numberOfMissingTransactions: number;
-  depositBefore: number;
-  depositAfter: number;
-  balanceBefore: number;
-  balanceAfter: number;
-};
-
-export type CardTransactionFragmentFragment =
-  | CardTransactionFragment_CardTransaction_Fragment
-  | CardTransactionFragment_MissingTransaction_Fragment;
-
-export type MissingTransactionFragmentFragment = {
-  __typename?: 'MissingTransaction';
-  numberOfMissingTransactions: number;
-};
-
-export type CardStatusQueryVariables = Exact<{
-  payload: Scalars['String'];
-}>;
-
-export type CardStatusQuery = {
-  __typename?: 'Query';
-  cardStatus: {
-    __typename?: 'CardStatus';
-    cardId: string;
-    balance: number;
-    deposit: number;
-    recentTransactions?: Array<
-      | {
-          __typename?: 'CardTransaction';
-          deviceTime: any;
-          depositBefore: number;
-          depositAfter: number;
-          balanceBefore: number;
-          balanceAfter: number;
-          Order: Array<{
-            __typename?: 'Order';
-            items: Array<{
-              __typename?: 'OrderItem';
-              amount: number;
-              name: string;
-              productList?: {
-                __typename?: 'ProductList';
-                emoji?: string | null;
-                name: string;
-              } | null;
-            }>;
-          }>;
-        }
-      | {
-          __typename?: 'MissingTransaction';
-          numberOfMissingTransactions: number;
-          depositBefore: number;
-          depositAfter: number;
-          balanceBefore: number;
-          balanceAfter: number;
-        }
-    > | null;
-  };
-};
-
-type RecentTransactionsFragment_CardTransaction_Fragment = {
   __typename: 'CardTransaction';
   deviceTime: any;
   depositBefore: number;
@@ -753,11 +662,60 @@ type RecentTransactionsFragment_CardTransaction_Fragment = {
   }>;
 };
 
-type RecentTransactionsFragment_MissingTransaction_Fragment = {
+type CardTransactionFragment_MissingTransaction_Fragment = {
   __typename: 'MissingTransaction';
   numberOfMissingTransactions: number;
+  depositBefore: number;
+  depositAfter: number;
+  balanceBefore: number;
+  balanceAfter: number;
 };
 
-export type RecentTransactionsFragmentFragment =
-  | RecentTransactionsFragment_CardTransaction_Fragment
-  | RecentTransactionsFragment_MissingTransaction_Fragment;
+export type CardTransactionFragmentFragment =
+  | CardTransactionFragment_CardTransaction_Fragment
+  | CardTransactionFragment_MissingTransaction_Fragment;
+
+export type CardStatusQueryVariables = Exact<{
+  payload: Scalars['String'];
+}>;
+
+export type CardStatusQuery = {
+  __typename?: 'Query';
+  cardStatus: {
+    __typename?: 'CardStatus';
+    cardId: string;
+    balance: number;
+    deposit: number;
+    recentTransactions?: Array<
+      | {
+          __typename: 'CardTransaction';
+          deviceTime: any;
+          depositBefore: number;
+          depositAfter: number;
+          balanceBefore: number;
+          balanceAfter: number;
+          Order: Array<{
+            __typename?: 'Order';
+            items: Array<{
+              __typename?: 'OrderItem';
+              amount: number;
+              name: string;
+              productList?: {
+                __typename?: 'ProductList';
+                emoji?: string | null;
+                name: string;
+              } | null;
+            }>;
+          }>;
+        }
+      | {
+          __typename: 'MissingTransaction';
+          numberOfMissingTransactions: number;
+          depositBefore: number;
+          depositAfter: number;
+          balanceBefore: number;
+          balanceAfter: number;
+        }
+    > | null;
+  };
+};

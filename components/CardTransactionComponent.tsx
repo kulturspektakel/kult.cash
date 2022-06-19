@@ -83,11 +83,13 @@ export default function CardTransactionComponent(
     }
   }
 
+  const isTopUp = props.balanceAfter > props.balanceBefore;
+
   return (
     <li className={styles.root}>
-      <div className={styles.emoji}>{emoji}</div>
+      <div className={styles.emoji}>{emoji ?? isTopUp ? '💰' : ''}</div>
       <div className={styles.content}>
-        <h3>{title ?? 'Abbuchung'}</h3>
+        <h3>{title ?? isTopUp ? 'Gutschrift' : 'Abbuchung'}</h3>
         {subtitle && (
           <div
             className={`${styles.subtitle} ${
