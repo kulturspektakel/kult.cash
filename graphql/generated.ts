@@ -120,6 +120,7 @@ export type CardStatus = {
   balance: Scalars['Int'];
   cardId: Scalars['ID'];
   deposit: Scalars['Int'];
+  hasNewerTransactions?: Maybe<Scalars['Boolean']>;
   recentTransactions?: Maybe<Array<Transaction>>;
 };
 
@@ -684,6 +685,7 @@ export type CardStatusQuery = {
   cardStatus: {
     __typename?: 'CardStatus';
     cardId: string;
+    hasNewerTransactions?: boolean | null;
     balance: number;
     deposit: number;
     recentTransactions?: Array<

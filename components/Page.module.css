@@ -34,4 +34,25 @@
   margin: 0;
   padding: 0;
 }
+
+.hasNewerTransactions {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #E9E8EE;
+  border-radius: 10px;
+}
+
+.hasNewerTransactions svg {
+  width: 30px;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.hasNewerTransactions p {
+  margin: 0;
+  line-height: 125%;
+}
   

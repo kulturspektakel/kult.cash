@@ -34,16 +34,22 @@ export default function CardTransactionComponent(
   props: CardTransactionFragmentFragment,
 ) {
   const total = props.balanceBefore - props.balanceAfter;
-  let title: string | undefined = undefined;
+  const isTopUp = props.balanceAfter > props.balanceBefore;
+
+  let title: string = isTopUp ? 'Gutschrift' : 'Abbuchung';
   let subtitle: string | undefined = undefined;
   let subtitle2: React.ReactElement | undefined = undefined;
-  let emoji: string | undefined = undefined;
+  let emoji: string | undefined = isTopUp ? '💰' : undefined;
 
   if (props.__typename === 'CardTransaction') {
     const order = props.Order.find(() => true);
     const productList = order?.items.find(() => true)?.productList;
-    emoji = productList?.emoji ?? '';
-    title = productList?.name;
+    if (productList?.emoji) {
+      emoji = productList.emoji;
+    }
+    if (productList?.name) {
+      title = productList?.name;
+    }
     const d = new Date(props.deviceTime);
 
     // Safari adds commas which breaks SSR
@@ -80,16 +86,15 @@ export default function CardTransactionComponent(
       subtitle = 'Details noch nicht verfügbar';
     } else {
       subtitle = `Details von ${props.numberOfMissingTransactions} Buchungen noch nicht verfügbar`;
+      emoji = undefined;
     }
   }
 
-  const isTopUp = props.balanceAfter > props.balanceBefore;
-
   return (
     <li className={styles.root}>
-      <div className={styles.emoji}>{emoji ?? isTopUp ? '💰' : ''}</div>
+      <div className={styles.emoji}>{emoji}</div>
       <div className={styles.content}>
-        <h3>{title ?? isTopUp ? 'Gutschrift' : 'Abbuchung'}</h3>
+        <h3>{title}</h3>
         {subtitle && (
           <div
             className={`${styles.subtitle} ${
