@@ -37,6 +37,9 @@ export default function CardTransactionComponent(
   const isTopUp = props.balanceAfter > props.balanceBefore;
 
   let title: string = isTopUp ? 'Gutschrift' : 'Abbuchung';
+  if (total === 0) {
+    title = 'Unbekannte Buchung';
+  }
   let subtitle: string | undefined = undefined;
   let subtitle2: React.ReactElement | undefined = undefined;
   let emoji: string | undefined = isTopUp ? '💰' : undefined;
