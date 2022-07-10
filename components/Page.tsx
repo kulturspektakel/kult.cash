@@ -7,6 +7,7 @@ import {useLongPress} from 'use-long-press';
 import CardTransactionComponent, {
   CardTransactionFragment,
 } from './CardTransactionComponent';
+import {useCallback} from 'react';
 
 export const PageQuery = gql`
   query CardStatus($payload: String!) {
@@ -24,11 +25,11 @@ export const PageQuery = gql`
 `;
 
 export default function Page(props: CardStatusQuery) {
-  const longPress = useLongPress(() => {
+  const openCrewPage = useCallback(() => {
     window.open(
       `https://crew.kulturspektakel.de/products/card?id=${props.cardStatus.cardId}`,
     );
-  });
+  }, [props.cardStatus.cardId]);
   return (
     <div className={styles.root}>
       <Head>
@@ -36,7 +37,7 @@ export default function Page(props: CardStatusQuery) {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </Head>
       <h1 className={styles.heading}>KultCard</h1>
-      <div {...longPress()}>
+      <div onDoubleClick={openCrewPage}>
         <Card {...props.cardStatus} />
       </div>
       <div className={styles.info}>
