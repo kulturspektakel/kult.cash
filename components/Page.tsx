@@ -3,6 +3,7 @@ import {gql} from 'graphql-request';
 import {CardStatusQuery} from '../graphql/generated';
 import styles from './Page.module.css';
 import Head from 'next/head';
+import {useLongPress} from 'use-long-press';
 import CardTransactionComponent, {
   CardTransactionFragment,
 } from './CardTransactionComponent';
@@ -23,6 +24,11 @@ export const PageQuery = gql`
 `;
 
 export default function Page(props: CardStatusQuery) {
+  const longPress = useLongPress(() => {
+    window.open(
+      `https://crew.kulturspektakel.de/products/card?id=${props.cardStatus.cardId}`,
+    );
+  });
   return (
     <div className={styles.root}>
       <Head>
@@ -30,7 +36,9 @@ export default function Page(props: CardStatusQuery) {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </Head>
       <h1 className={styles.heading}>KultCard</h1>
-      <Card {...props.cardStatus} />
+      <div {...longPress()}>
+        <Card {...props.cardStatus} />
+      </div>
       <div className={styles.info}>
         Das Guthaben der Karte kann an den Bonbuden ausgezahlt werden. Auf der
         Karte selbst sind 2&nbsp;Euro Kartenpfand.
