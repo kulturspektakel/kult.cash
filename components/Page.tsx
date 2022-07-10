@@ -3,7 +3,6 @@ import {gql} from 'graphql-request';
 import {CardStatusQuery} from '../graphql/generated';
 import styles from './Page.module.css';
 import Head from 'next/head';
-import {useLongPress} from 'use-long-press';
 import CardTransactionComponent, {
   CardTransactionFragment,
 } from './CardTransactionComponent';
