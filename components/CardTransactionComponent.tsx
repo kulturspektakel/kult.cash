@@ -45,7 +45,8 @@ export default function CardTransactionComponent(
   let emoji: string | undefined = isTopUp ? '💰' : undefined;
 
   if (props.__typename === 'CardTransaction') {
-    const order = props.Order.find(() => true);
+    console.log(props);
+    const order = props.Order;
     const productList = order?.items.find(() => true)?.productList;
     if (productList?.emoji) {
       emoji = productList.emoji;
