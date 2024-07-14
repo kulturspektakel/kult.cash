@@ -7,7 +7,7 @@ module.exports = {
     return [
       {
         source: '/learn',
-        destination: 'https://youtu.be/GWXx1F906IQ',
+        destination: 'https://youtu.be/2arxBGrjBgI',
         permanent: false,
         basePath: false,
       },
