@@ -1,4 +1,4 @@
-import Card, {CardFragment} from './Card';
+import Card, {CardFragment} from './KultCard';
 import {gql} from 'graphql-request';
 import {CardStatusQuery} from '../graphql/generated';
 import styles from './Page.module.css';

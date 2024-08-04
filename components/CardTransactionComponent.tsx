@@ -1,6 +1,6 @@
 import {gql} from 'graphql-request';
 import {CardTransactionFragmentFragment} from '../graphql/generated';
-import {currencyFormatter} from './Card';
+import {currencyFormatter} from './KultCard';
 import styles from './CardTransaction.module.css';
 
 export const CardTransactionFragment = gql`
